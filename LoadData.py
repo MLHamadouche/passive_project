@@ -6,7 +6,7 @@ from astropy.io import fits
 import os
 import re
 from collections import OrderedDict
-import adam_load_vandels as a_load
+#import adam_load_vandels as a_load
 from glob import glob
 
 #fluxes and flux errors columns are in wavelength order same as filters
@@ -76,6 +76,7 @@ def find_file(ID, extension):
 
 def load_vandels(object):
     path, prefix, flux_errs, flux_cols, new_ID = find_file(object, 'fits')
+    print(new_ID)
     cat_file = Table.read(path).to_pandas()
     catalog = pd.DataFrame(cat_file)
 
@@ -127,7 +128,12 @@ def load_vandels(object):
 #print(load_vandels('UDS-GROUND195491SELECT'))
 
 def load_vandels_spectra(ID):
-    print(ID)
+    pre = ID.split('-')[0]
+    #print(pre)
+    new_ID = re.search('\d+', ID).group()
+    #ID = ID.lstrip('0')
+    ID = str(pre) + str(new_ID)
+    #print(ID)
     globpath = os.path.join('vandelsspec/', '*.fits')
     filelist = glob(globpath)
     #print(filelist[0])
@@ -147,4 +153,14 @@ def load_vandels_spectra(ID):
 
     return spectrum
 
-#print(load_vandels_spectra('UDS003618').shape)
+#print(load_vandels_spectra('UDS-GROUND003618SELECT'))
+
+
+def load_vandels_both(ID):
+    photometry = load_vandels(ID)
+    spectrum = load_vandels_spectra(ID)
+
+    return  spectrum, photometry
+
+
+print(load_vandels_both('UDS-GROUND195491SELECT'))

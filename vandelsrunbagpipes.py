@@ -4,7 +4,6 @@ import pandas as pd
 import LoadData as ld
 from astropy.io import fits
 from astropy.table import Table
-import pymultinest
 import adam_load_vandels as a_load
 
 exp = {}

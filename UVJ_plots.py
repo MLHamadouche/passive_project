@@ -47,17 +47,3 @@ plt.ylabel(r'U-V')
 plt.title(r'UVJ diagram for VANDELS objects 1 < z < 1.5')
 plt.savefig('UVJ_werrs.pdf')
 plt.close()
-
-"""
-wavelengths = np.arange(1100., 5000, 10)
-MW = extinction.fitzpatrick99(wavelengths, 1.0, 3.1)
-SMC = extinction.fitzpatrick99(wavelengths, 1.0, 2.7)
-LMC = extinction.fitzpatrick99(wavelengths, 1.0, 3.4)
-calzetti = extinction.calzetti00(wavelengths,1.0, 4.05)
-plt.plot(wavelengths, MW)
-plt.plot(wavelengths, SMC)
-plt.plot(wavelengths, LMC)
-plt.plot(wavelengths, calzetti)
-plt.xlim(1200, 5000)
-plt.show()
-"""

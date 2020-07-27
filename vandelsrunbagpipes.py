@@ -4,7 +4,7 @@ import pandas as pd
 import LoadData as ld
 from astropy.io import fits
 from astropy.table import Table
-import adam_load_vandels as a_load
+
 
 exp = {}
 exp["age"] = (0.1, 15.)
@@ -29,7 +29,7 @@ cdfs_hst_filt= np.loadtxt("catalogs/CDFS_HST_filt_list.txt", dtype="str")
 passive_cut = Table.read('FirstProjectCatalogs/xmatch_spec_derived237objs.fits').to_pandas()
 redshifts = passive_cut['z_spec']
 #print(redshifts)
-ID_list = np.array(passive_cut['FIELD'].str.decode("utf-8").str.rstrip() + passive_cut['ID_1'].astype(str).str.pad(6, side='left', fillchar='0')+ "SELECT")#catalog['CAT'].str.decode("utf-8"))
+ID_list = np.array(passive_cut['FIELD'].str.decode("utf-8").str.rstrip() + passive_cut['ID_1'].astype(str).str.pad(6, side='left', fillchar='0')+ passive_cut['CAT'].str.decode("utf-8"))
 #print(ID_list)
 
 filt_list = []

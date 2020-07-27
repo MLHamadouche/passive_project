@@ -6,7 +6,7 @@ from astropy.io import fits
 import os
 import re
 from collections import OrderedDict
-#import adam_load_vandels as a_load
+
 from glob import glob
 
 #fluxes and flux errors columns are in wavelength order same as filters
@@ -70,7 +70,7 @@ def find_file(ID, extension):
         return new_path, new_pre, flux_errs, flux, new_ID
 
 #'CDFS_GROUND000013'
-#path, prefix, flux_errs, flux, new_ID = find_file('CDFS-HST000013SELECT', 'fits')
+#path, prefix, flux_errs, flux, new_ID = find_file('UDS-HST005769SELECT', 'fits')
 #'CDFS_HST034930'
 #print(f'path:{ path}\nprefix:{prefix}\n flux: {flux}\n flux_errs: {flux_errs}')
 
@@ -123,8 +123,8 @@ def load_vandels(object):
     return photometry
 
 #ID = 'UDS_HST035930'
-#print(load_vandels('UDS-HST035930'))
-#print(a_load.load_vandels_phot('UDS-GROUND195491SELECT'))
+#print(load_vandels('UDS-HST005769MASTER'))
+
 #print(load_vandels('UDS-GROUND195491SELECT'))
 
 def load_vandels_spectra(ID):
@@ -141,7 +141,7 @@ def load_vandels_spectra(ID):
         #print(filelist[i])
         if ID in str(filelist[i]):
             hdulist = fits.open(filelist[i])
-            print(filelist[i])
+            #print(filelist[i])
             flux = hdulist[0].data
             flux_err = hdulist[3].data
             redshift = hdulist[0].header['HIERARCH PND Z']
@@ -163,4 +163,4 @@ def load_vandels_both(ID):
     return  spectrum, photometry
 
 
-print(load_vandels_both('UDS-GROUND195491SELECT'))
+#print(load_vandels_both('UDS-GROUND195491SELECT'))

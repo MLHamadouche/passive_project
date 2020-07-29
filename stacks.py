@@ -33,7 +33,10 @@ spectrum = []
 #resampling spectra onto new wavelength grid with spectres
 z_mask = (redshifts <= 1.1) & (redshifts>= 1.0) # 89 objects
 new_objs = objects[z_mask]
-
+specc = np.zeros((len(new_wavs),len(new_objs)))
+specerrs = np.zeros((len(new_wavs),len(new_objs)))
+spec = []
+spec_err = []
 for ID in new_objs:
     z = ID_list.loc[ID, 'z_spec']
     spectrum=ld.load_vandels_spectra(ID)
@@ -43,17 +46,19 @@ for ID in new_objs:
     old_errs = spectrum[:,2]#/np.mean(spectrum[:,1][mask])
 
     new_spec, new_errs = spectres.spectres(new_wavs, rest_wavs, old_spec, spec_errs=old_errs)
+    spec.append(new_spec)
+    spec_err.append(new_errs)
 
-specc = np.zeros((len(new_wavs),len(new_objs)))
-specerrs = np.zeros((len(new_wavs),len(new_objs)))
+spec = np.transpose(spec)
+spec_err = np.transpose(spec_err)
 
-for n in range(len(new_objs)):
-    specc[:,n] = new_spec
-    specerrs[:,n] = new_errs
+#for n in range(len(new_objs)):
+#    specc[:,n] = spec
+#    specerrs[:,n] = spec_err
 
 #print(specc, specerrs)
-print(specc.shape)
-print(specc[0:10])
+#print(specc.shape)
+#print(specc[0:10])
 
 median_spec = np.zeros(len(new_wavs))
 errs = np.zeros(len(new_wavs))
@@ -61,14 +66,14 @@ spec_ = np.zeros(len(new_wavs))
 spec_errs = np.zeros(len(new_wavs))
 
 for m in range(len(new_wavs)):
-    spec_ = specc[m,:]
-    spec_errs = specerrs[m,:]
+    spec_ = spec[m,:]
+    spec_errs = spec_err[m,:]
     median_spec[m] = np.median(spec_)
     #errs[m] = np.median(spec_errs) #nope
     #errs[m] = np.sqrt(1/np.sum(spec_errs**2)) #??? weighted errors
 
-print(median_spec.shape)
-print(new_wavs.shape)
+    #print(median_spec.shape)
+    #print(new_wavs.shape)
 
 fig, (ax1, ax2) = plt.subplots(2, figsize=(12,7))
 grid = gridspec.GridSpec(2, 1, height_ratios=[4,1])

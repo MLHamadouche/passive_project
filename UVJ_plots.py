@@ -5,7 +5,7 @@ from astropy.table import Table
 import matplotlib
 import extinction
 
-vandels_cat = Table.read("pipes/cats/vandels_cat.fits").to_pandas()
+vandels_cat = Table.read("pipes/cats/vandels_cat_zspec.fits").to_pandas()
 
 UV = vandels_cat["UV_colour_50"]
 VJ = vandels_cat["VJ_colour_50"]
@@ -67,12 +67,12 @@ plt.plot(x, Y, ls = '-', lw = 0.9, color='k')
 im=ax.scatter(VJ, UV, s = 25,c= c,cmap=plt.cm.magma, marker='o', edgecolors='black',  linewidth=0.5)
 plt.xlabel(r'V-J')
 plt.ylabel(r'U-V')
-plt.xlim(0,2.75)
-plt.ylim(0.,3.1)
+plt.xlim(0,2.5)
+plt.ylim(0.,3.0)
 cbar = fig.colorbar(im, ax=ax)
 cbar.set_label(r'log(M/M$_{\odot}$)')
 cbar.set_label(r'Age (Gyrs)')
 plt.title(r'UVJ diagram for VANDELS objects 1 < z < 1.5')
-plt.savefig('UVJ_agecbar_box.pdf')
+plt.savefig('UVJ_agecbar_box_zspec.pdf')
 plt.close()
 #plt.show()

@@ -39,7 +39,7 @@ wa_end = wav_first_pixel + (2154*delt_wav)
 wa = np.arange(wav_first_pixel, wa_end, delt_wav)
 print(len(wa))
 spectrum  = np.c_[wa, flux, flux_err]
-
+#haha
 #wave=np.arange(0,30000,30000/2154)
 #waves = np.array(wave)
 #print(sp1[0].header)

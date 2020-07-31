@@ -43,7 +43,7 @@ for object in ID_list:
     else:
         filt_list.append(uds_ground_filt)
 
-fit_cat = pipes.fit_catalogue(ID_list, fit_instructions, ld.load_vandels,full_catalogue=True, photometry_exists=True, spectrum_exists=False,cat_filt_list=filt_list, make_plots=True, run="vandels_cat", vary_filt_list = True)#, redshifts=redshifts)
+fit_cat = pipes.fit_catalogue(ID_list, fit_instructions, ld.load_vandels,full_catalogue=True, photometry_exists=True, spectrum_exists=False,cat_filt_list=filt_list, make_plots=True, run="vandels_cat_zspec", vary_filt_list = True, redshifts=redshifts)
 
 fit_cat.fit(verbose=False, mpi_serial=True)
 

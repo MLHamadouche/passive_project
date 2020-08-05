@@ -46,7 +46,7 @@ c = age1
 csfr = SSFR
 fig, ax = plt.subplots()
 
-x = np.linspace(0., 3.9, 237)
+x = np.linspace(0., 3.9, 1000)
 
 Y = 0.88*x + 0.49
 Y1 = -0.88*x + 3.7
@@ -151,13 +151,13 @@ new_ID = []
 new_ID2 = []
 new_ID3 = []
 new_ID4 = []
-for i in bin1:
-    new_ID.append(i.decode("utf-8"))
+for s in bin1:
+    new_ID.append(s.decode("utf-8"))
 for j in bin2:
     new_ID2.append(j.decode("utf-8"))
 for k in bin3:
     new_ID3.append(k.decode("utf-8"))
-for l in bin2:
+for l in bin4:
     new_ID4.append(l.decode("utf-8"))
 
 objects = new_ID
@@ -165,25 +165,25 @@ objects2 = new_ID2
 objects3 = new_ID3
 objects4 = new_ID4
 
-
-
 new_wavs = np.arange(2400, 4200, 1.5) #new wavelength grid
 #z_mask = (redshifts[objects] <= 1.5) & (redshifts[objects]>= 1.0)
-
-med_stack = stacks(new_wavs, objects)
-
 def plot_stacks(new_wavs, med_stack, bin_number):
     plt.figure(figsize=(15,7))
     plt.plot(new_wavs, med_stack*10**18, color="black", lw=1.5 )
     plt.xlabel("Wavelength ($\mathrm{\AA}$)", size=15)
     plt.ylabel("Flux $(10^{-18}\ \mathrm{erg\ s^{-1}\ cm^{-2}\ \\AA{^-1})}$", size=15)
     plt.xlim(2300, 4250)
+    plt.ylim(0 ,2.0)
     plt.title('Median Stacked Spectra of galaxies 1 < z < 1.5', size=17)
     plt.savefig('stack_plot_bin'+str(bin_number)+ '.pdf')
+    plt.close()
 
+med_stack = stacks(new_wavs, objects)
 plot_stacks(new_wavs, med_stack, 1)
+
 med_stack2 = stacks(new_wavs, objects2)
 plot_stacks(new_wavs, med_stack2, 2)
+
 med_stack3 = stacks(new_wavs, objects3)
 plot_stacks(new_wavs, med_stack3, 3)
 

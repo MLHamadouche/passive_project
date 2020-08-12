@@ -76,7 +76,7 @@ def stacks(new_wavs, objects):
 
 
     return med_spec_units
-
+# see UVJ_plots.py for code to stack up UVJ diagram 
 """
 fig, (ax1, ax2) = plt.subplots(2, figsize=(15,7))
 grid = gridspec.GridSpec(2, 1, height_ratios=[6,1])

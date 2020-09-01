@@ -16,7 +16,7 @@ def find_file(ID, extension):
     new_ID = re.search('\d+', ID).group()
     new_ID = new_ID.lstrip('0')
     print(new_ID)
-    for root, dirs, files in os.walk('/Users/PhDStuff/sed_fitting_code/catalogs'):
+    for root, dirs, files in os.walk('/Users/PhDStuff/passive_project/catalogs'):
         if "CDFS" in ID:
             if 'HST' in ID:
                 files = "VANDELS_CDFS_HST_PHOT_v1.0.fits"
@@ -127,21 +127,18 @@ def load_vandels(object):
 
 #print(load_vandels('UDS-GROUND195491SELECT'))
 
-def load_vandels_spectra(ID):
-    pre = ID.split('-')[0]
+def load_vandels_spectra(ID_no):
+    pre = ID_no.split('-')[0]
     #print(pre)
-    new_ID = re.search('\d+', ID).group()
+    new_ID = re.search('\d+', ID_no).group()
     #ID = ID.lstrip('0')
-    ID = str(pre) + str(new_ID)
-    #print(ID)
-    globpath = os.path.join('vandelsspec/', '*.fits')
+    ID_new = str(pre) + str(new_ID)
+    globpath = os.path.join('new_vandels_spec/', '*.fits')
     filelist = glob(globpath)
     #print(filelist[0])
     for i in range(len(filelist)):
-        #print(filelist[i])
-        if ID in str(filelist[i]):
+        if ID_new in str(filelist[i]):
             hdulist = fits.open(filelist[i])
-            #print(filelist[i])
             flux = hdulist[0].data
             flux_err = hdulist[3].data
             redshift = hdulist[0].header['HIERARCH PND Z']
@@ -153,14 +150,14 @@ def load_vandels_spectra(ID):
 
     return spectrum
 
-#print(load_vandels_spectra('UDS-GROUND003618SELECT'))
+#print(load_vandels_spectra('UDS-HST004674SELECT'))
 
 
-def load_vandels_both(ID):
-    photometry = load_vandels(ID)
-    spectrum = load_vandels_spectra(ID)
+def load_vandels_both(ID_):
+    photometry = load_vandels(ID_)
+    spectrum = load_vandels_spectra(ID_)
 
     return  spectrum, photometry
 
 
-#print(load_vandels_both('UDS-GROUND195491SELECT'))
+#print(load_vandels_both('UDS-GROUND154207SELECT'))

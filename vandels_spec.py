@@ -8,7 +8,7 @@ import os
 from astropy import units as u
 from astropy.coordinates import SkyCoord
 
-globpath = os.path.join('vandelsspec/', '*.fits')
+globpath = os.path.join('new_vandels_spec/', '*.fits')
 print(globpath)
 # glob searches through directories similar to the Unix shell
 filelist = glob(globpath)

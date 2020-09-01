@@ -26,8 +26,9 @@ uds_ground_filt = np.loadtxt("catalogs/UDS_GROUND_filt_list.txt", dtype = "str")
 cdfs_ground_filt = np.loadtxt("catalogs/CDFS_GROUND_filt_list.txt", dtype="str")
 cdfs_hst_filt= np.loadtxt("catalogs/CDFS_HST_filt_list.txt", dtype="str")
 
-passive_cut = Table.read('FirstProjectCatalogs/xmatch_spec_derived237objs.fits').to_pandas()
-redshifts = passive_cut['z_spec']
+#passive_cut = Table.read('FirstProjectCatalogs/xmatch_spec_derived237objs.fits').to_pandas()
+passive_cut = Table.read('FirstProjectCatalogs/x_match_final_passive_sample_edit.fits').to_pandas()
+redshifts = passive_cut['zspec']
 #print(redshifts)
 ID_list = np.array(passive_cut['FIELD'].str.decode("utf-8").str.rstrip() + passive_cut['ID_1'].astype(str).str.pad(6, side='left', fillchar='0')+ passive_cut['CAT'].str.decode("utf-8"))
 #print(ID_list)
@@ -45,7 +46,7 @@ for object in ID_list:
 
 fit_cat = pipes.fit_catalogue(ID_list, fit_instructions, ld.load_vandels, full_catalogue=True, photometry_exists=True, spectrum_exists=False,cat_filt_list=filt_list, make_plots=True, run="vandels_cat_zspec", vary_filt_list = True, redshifts=redshifts)
 
-fit_cat.fit(verbose=False, mpi_serial=True)
+fit_cat.fit(verbose=True, mpi_serial=True)
 
 
 #vandels_bagpipes = Table.read('pipes/cats/vandels_cat.fits').to_pandas()

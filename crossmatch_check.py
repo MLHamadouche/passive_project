@@ -75,34 +75,35 @@ print(len(new_re), len(new_UV))
 
 
 
-"""
+
 x = np.linspace(0., 3.9, 1000)
-Y = 0.88*x + 0.69
+Y1 = 0.88*x + 0.69
+Y = 0.88*x + 0.49
 ax1.plot(x, Y, linestyle = '-', lw = 2., color = 'k')
+ax1.plot(x, Y1, linestyle = '-', lw = 2., color = 'r')
 if [Y <= 1.3]:
-    xmax = (1.3 - 0.69)/0.88
+    xmax = (1.3 - 0.49)/0.88
     xmin = 0
     ax1.hlines(y = 1.3, xmin = xmin, xmax = xmax, ls = '-', lw = 2.)#1.3
 
 if [x>=1.6]:
-    Ymin = 0.88*1.6 +0.69
-    Ymax = 0.88*len(x) +0.69
+    Ymin = 0.88*1.6 +0.49
+    Ymax = 0.88*len(x) +0.49
 
     ax1.vlines(x=1.6, ymin=Ymin, ymax=3.5, ls = '-', lw = 2.)#1.3
 
 
 
-im = ax1.scatter(new_VJ, new_UV, s=30, c=new_re, cmap=plt.cm.magma, marker='o', edgecolors='black',  linewidth=0.5 )
+im = ax1.scatter(new_VJ, new_UV, s=100, c=new_re, cmap=plt.cm.magma, marker='o', edgecolors='black',  linewidth=0.5 )
 cbar = fig.colorbar(im, ax=ax1)
 #cbar.set_label(r'$\mathrm{log_{10}(sSFR/yr)}$')
 cbar.set_label(r'size (re)', size=10)
-ax1.set_xlim(0.4, 3.)
-ax1.set_ylim(0, 2.5)
+ax1.set_xlim(0.3, 2.0)
+ax1.set_ylim(0.75, 2.5)
 ax1.set_title('UVJ diagram for VANDELS objects 1 < z < 2.5', size = 25)
 ax1.set_xlabel(r'V-J', size=10)
 ax1.set_ylabel(r'U-V',size=10)
-ax1.set_xticks(np.arange(0.5, 3., 0.5))
+#ax1.set_xticks(np.arange(0.5, ., 0.5))
 ax1.tick_params(axis = 'both', labelsize =10, size = 10)
 
-plt.show()
-"""
+plt.savefig('size_UVJ_cbar.pdf')

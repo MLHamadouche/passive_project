@@ -8,6 +8,7 @@ import spectres
 import LoadData as ld
 from glob import glob
 import os
+from astropy.stats import sigma_clip
 #from stacks import stacks
 
 
@@ -54,7 +55,7 @@ new_df=pd.concat([df1,df2]).drop_duplicates(subset = 'ID_1', keep=False)
 ID_list = new_df.set_index(new_df['FIELD'].str.decode("utf-8").str.rstrip() + new_df['ID_1'].astype(str).str.pad(6, side='left', fillchar='0') + new_df['CAT'].str.decode("utf-8"))
 #print(ID_list)
 #print(len(ID_list))
-#print(len(missing))
+print(len(missing))
 
 new_wavs = np.arange(2400, 4200, 1.25)
 
@@ -85,17 +86,34 @@ def stacks(list_of_IDs, pd_list):
     for ID in list_of_IDs:
         z = pd_list.loc[ID, 'zspec']
         spectrum = ld.load_vandels_spectra(ID)
+        wav = spectrum[:,0]
+        flux = spectrum[:,1]
+        errors = spectrum[:,0]
+        #print(ID)
+        #plt.plot(wav, flux)
+        #plt.savefig(str(ID)+'.pdf')
+        #plt.close()
+        for f in flux:
+            if f==0:
+                f = np.nan
+        for e in errors:
+            if e==0:
+                e = np.nan
+        plt.plot(wav, flux)
+        plt.savefig(str(ID)+'.pdf')
+        plt.close()
+
         rest_wavs = spectrum[:,0]/(1.0 + z)
         #print(f'rest_wavs={rest_wavs}')
         #print(max(rest_wavs), min(rest_wavs))
         #print(f'flux={spectrum[:,1]}')
         mask =  (rest_wavs > 3000) & (rest_wavs < 3500) # fairly featureless region of spectrum
-        old_spec = spectrum[:,1]/np.median(spectrum[:,1][mask]) #normalisation median from that region
-        old_errs = spectrum[:,2]/np.median(spectrum[:,2][mask])
-        med_norm.append(np.median(spectrum[:,1][mask]))
+        old_spec = spectrum[:,1]/np.nanmedian(spectrum[:,1][mask]) #normalisation median from that region
+        old_errs = spectrum[:,2]/np.nanmedian(spectrum[:,2][mask])
+        med_norm.append(np.nanmedian(spectrum[:,1][mask]))
         #print(f'old_spec:\n {old_spec}')
         #input()
-        new_spec, new_errs = spectres.spectres(new_wavs, rest_wavs, old_spec, spec_errs=old_errs, fill=0)
+        new_spec, new_errs = spectres.spectres(new_wavs, rest_wavs, old_spec, spec_errs=old_errs)
         #print(new_spec)
         for i in new_spec:
             i  = float(i)
@@ -108,7 +126,7 @@ def stacks(list_of_IDs, pd_list):
     #print(spec)
     spec_err = np.transpose(spec_err)
 
-    med_new = np.median(med_norm)
+    med_new = np.nanmedian(med_norm)
     for m in range(len(new_wavs)):
         spec_ = spec[m,:]
         #print(spec_)
@@ -117,7 +135,7 @@ def stacks(list_of_IDs, pd_list):
         median_spectrum = median_spec[m] #newline
         #print(np.median(spec_))
         #input()
-        median_spec[m]=np.median(spec_)
+        median_spec[m]=np.nanmedian(spec_)
 
         median_spectrum = median_spec[m]
         #median_spectrum_units = median_spectrum * np.median(spec_)
@@ -137,13 +155,13 @@ def plot_stackssingle(stack):
     #plt.xlim(2300, 4250)
     plt.ylim(0 ,2.0)
     plt.title('Median Stacked Spectra excluding possible AGN (CDFS + UDS)')# excluding possible AGN (CDFS + UDS)')
-    plt.savefig('stack_plot_exc_x_ray.pdf')
+    plt.savefig('stack_plot_exc_x_ray_check_nans.pdf')
     plt.close()
 
 #new_waves = np.arange(2400, 4300, 1.25)
-#med_stack_missing = stacks(missing, ID_list)
-#med_stack_with_agn = stacks(all_obs, ID_list2)
-#plot_stacks(new_waves, med_stack)
+#med_stack_agn = stacks(objects1, ID_list1)
+med_stack_missing = stacks(missing, ID_list)
+plot_stackssingle(med_stack_missing)
 #fig = plt.figure(figsize = (15,7))
 def subplots(med_stack_with_agn, med_stack_missing):
     fig, (ax1, ax2) = plt.subplots(2, figsize = (15,7),sharex=True, sharey=True)
@@ -151,18 +169,18 @@ def subplots(med_stack_with_agn, med_stack_missing):
     ax1.plot(new_wavs, med_stack_missing*10**18, 'k', lw=0.9)
     ax2.plot(new_wavs, med_stack_with_agn*10**18, 'r',lw=0.9)
     ax1.set_title('Excluding AGN (N=228)')
-    ax2.set_title('Including AGN (N=264)')
+    ax2.set_title('Only AGN (N=36)')
     plt.xlabel("Wavelength ($\mathrm{\AA}$)",)
     ax2.set_ylabel("Flux $(10^{-18}\ \mathrm{erg\ s^{-1}\ cm^{-2}\ \\AA{^-1})}$", )
     ax1.set_ylabel("Flux $(10^{-18}\ \mathrm{erg\ s^{-1}\ cm^{-2}\ \\AA{^-1})}$", )
     plt.savefig('stack_plot_two_figs.pdf')
 
-
+#subplots(med_stack_agn, med_stack_missing)
 
 def plot_stacks(stack1, stack2):
     plt.figure(figsize=(15,7))
-    plt.plot(new_wavs, stack2*10**18, color="red", lw=1.5, ls ='-', label = 'including possible AGN (N=264)')
-    plt.plot(new_wavs, stack1*10**18, color="black", lw=1.6, label = 'excluding possible AGN (N=228)')
+    plt.plot(new_wavs, stack1*10**18, color="red", lw=1.5, ls ='-', label = 'possible AGN (N=36)')
+    plt.plot(new_wavs, stack2*10**18, color="black", lw=1.6, label = 'excluding possible AGN (N=228)')
     plt.xlabel("Wavelength ($\mathrm{\AA}$)", size=15)
     plt.ylabel("Flux $(10^{-18}\ \mathrm{erg\ s^{-1}\ cm^{-2}\ \\AA{^-1})}$", size=15)
     #plt.xlim(2300, 4250)
@@ -172,9 +190,11 @@ def plot_stacks(stack1, stack2):
     plt.savefig('stack_plot_on_top.pdf')
     plt.close()
 
+
+
 #print(len(med_stack))
 #print(med_stack)
 #plot_stackssingle(med_stack_with_agn)
-#plot_stackssingle(med_stack_missing)
+#plot_stacks(med_stack_agn, med_stack_missing)
 
 #plot_stacks(med_stack_missing, med_stack_with_agn)

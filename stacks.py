@@ -48,10 +48,10 @@ def stacks(new_wavs, objects):
         spectrum = ld.load_vandels_spectra(ID)
         rest_wavs=spectrum[:,0]/(1.+z)
         mask = (rest_wavs < 3500) & (rest_wavs > 3000) # fairly featureless region of spectrum
-        old_spec = spectrum[:,1]/np.median(spectrum[:,1][mask]) #normalisation median from that region
-        old_errs = spectrum[:,2]/np.median(spectrum[:,2][mask])
-        med_norm.append(np.median(spectrum[:,1][mask]))
-        new_spec, new_errs = spectres.spectres(new_wavs, rest_wavs, old_spec, spec_errs=old_errs, fill=0)
+        old_spec = spectrum[:,1]/np.nanmedian(spectrum[:,1][mask]) #normalisation median from that region
+        old_errs = spectrum[:,2]/np.nanmedian(spectrum[:,2][mask])
+        med_norm.append(np.nanmedian(spectrum[:,1][mask]))
+        new_spec, new_errs = spectres.spectres(new_wavs, rest_wavs, old_spec, spec_errs=old_errs)
         spec.append(new_spec)
         spec_err.append(new_errs)
 
@@ -66,11 +66,11 @@ def stacks(new_wavs, objects):
     for m in range(len(new_wavs)):
         spec_ = spec[m,:]
         spec_errs = spec_err[m,:]
-        median_spec[m]=np.median(spec_)
-        errs[m] = np.median(spec_errs) #nopes
+        median_spec[m]=np.nanmedian(spec_)
+        errs[m] = np.nanmedian(spec_errs) #nopes
     #errs[m] = np.sqrt(1/np.sum(spec_errs**2)) #??? weighted errors
     #print(len(median_spec))
-    med_new = np.median(med_norm) # multiply stacked median spectrum by this value to get back the units for flux
+    med_new = np.nanmedian(med_norm) # multiply stacked median spectrum by this value to get back the units for flux
     med_spec_units = median_spec*med_new
 
     return med_spec_units

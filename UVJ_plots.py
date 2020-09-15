@@ -6,6 +6,7 @@ import matplotlib
 from shapely.geometry import Point
 from shapely.geometry.polygon import Polygon
 from x_ray_check import stacks
+from astropy.stats import sigma_clip
 #from stacks import stacks
 
 vandels_cat_new = Table.read("pipes/cats/vandels_cat_zspec.fits").to_pandas()
@@ -146,6 +147,12 @@ all_obs = np.array(passive_cut['FIELD'].str.decode("utf-8").str.rstrip() + passi
 
 missing = list(set(all_obs).difference(agn))
 
+new_df=pd.concat([df1,df2]).drop_duplicates(subset = 'ID_1', keep=False)
+#print(new_df)
+
+ID_list = new_df.set_index(new_df['FIELD'].str.decode("utf-8").str.rstrip() + new_df['ID_1'].astype(str).str.pad(6, side='left', fillchar='0') + new_df['CAT'].str.decode("utf-8"))
+
+
 def plot_stacks(new_wavs, med_stack, bin_number):
     plt.figure(figsize=(15,7))
     plt.plot(new_wavs, med_stack*10**18, color="black", lw=1.5 )
@@ -280,13 +287,47 @@ ax1.set_ylabel(r'U-V',size=25)
 ax1.set_xticks(np.arange(0.5, 3., 0.5))
 ax1.tick_params(axis = 'both', labelsize =20, size = 20)
 
-wavs_stack = np.arange(2400, 4200, 1.5)
+wavs_stack = np.arange(2400, 4200, 1.25)
 
 
 #median ages going up the passive box in bins
 df1 = pd.DataFrame(vandels_cat_new)
+#df2 = pd.DataFrame(passive_cut)
 
+concat_3dhst = Table.read('FirstProjectCatalogs/concat_3dhst_passive_match.fits').to_pandas()
+df3 = pd.DataFrame(concat_3dhst)
+size_list = np.array(concat_3dhst['FIELD'].str.decode("utf-8").str.rstrip() + concat_3dhst['ID_1'].astype(str).str.pad(6, side='left', fillchar='0') + concat_3dhst['CAT'].str.decode("utf-8"))
+
+ID_ = df3.set_index(concat_3dhst['FIELD'].str.decode("utf-8").str.rstrip() + concat_3dhst['ID_1'].astype(str).str.pad(6, side='left', fillchar='0') + concat_3dhst['CAT'].str.decode("utf-8"))
+
+ID_pipes = vandels_cat_new['#ID'].values
 IDs = df1.set_index(s.decode('utf-8') for s in vandels_cat_new['#ID'])
+#IDs = df1.set_index(s.decode('utf-8') for s in vandels_cat_new['#ID'])
+all_ages = []
+all_masses = []
+all_sizes = []
+list_IDs = []
+for i in size_list:
+    for j in ID_pipes:
+        j = j.decode("utf-8")
+        if i == j:
+            list_IDs.append(i)
+
+for ID in list_IDs:
+    if ID not in agn:
+        all_ages.append(IDs.loc[ID, "mass_weighted_age_50"])
+        #print(all_ages)
+        all_masses.append(ID_list.loc[ID, "log10(M*)"])
+        #print(all_masses)
+        all_sizes.append(ID_.loc[ID, 're'])
+
+print(len(all_sizes))
+median_age = np.nanmedian(all_ages)
+print('median age:', median_age , 'Gyrs')
+median_mass = np.nanmedian(all_masses)
+print('median mass:', median_mass)
+median_size = np.nanmedian(all_sizes)
+print('median size:', median_size , 'kpc')
 
 for xray in agn:
     if xray in new_ID1:
@@ -317,16 +358,16 @@ print(len(new_ID1), len(new_ID2), len(new_ID3), len(new_ID4))
 
 input()
 
-med_stack1 = stacks(new_ID1)
+med_stack1 = stacks(new_ID1, ID_list)
 #plot_stacks(new_waves, median_stack, 9)
 
-med_stack2 = stacks(new_ID2)
+med_stack2 = stacks(new_ID2, ID_list)
 #plot_stacks(new_waves, med_stack2, 10)
 
-med_stack3 = stacks(new_ID3)
+med_stack3 = stacks(new_ID3, ID_list)
 #plot_stacks(new_waves, med_stack3, 11)
 
-med_stack4 = stacks(new_ID4)
+med_stack4 = stacks(new_ID4, ID_list)
 
 #print(new_ID4)
 #plot_stacks(new_waves, med_stack4, 12)

@@ -88,18 +88,18 @@ def stacks(list_of_IDs, pd_list):
         spectrum = ld.load_vandels_spectra(ID)
         wav = spectrum[:,0]
         flux = spectrum[:,1]
-        errors = spectrum[:,0]
+        errors = spectrum[:,2]
         #print(ID)
         #plt.plot(wav, flux)
         #plt.savefig(str(ID)+'.pdf')
         #plt.close()
-        for f in flux:
+        for f in spectrum[:,1]:
             if f==0:
                 f = np.nan
-        for e in errors:
+        for e in spectrum[:,2]:
             if e==0:
                 e = np.nan
-        plt.plot(wav, flux)
+        plt.plot(wav, spectrum[:,1])
         plt.savefig(str(ID)+'.pdf')
         plt.close()
 

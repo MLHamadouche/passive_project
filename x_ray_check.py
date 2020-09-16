@@ -66,12 +66,6 @@ def stacks(list_of_IDs, pd_list):
     old_spec =[]
     old_errs = []
 
-    #resampling spectra onto new wavelength grid with spectres
-    #z_mask = (redshifts <= 1.5) & (redshifts>= 0.9) # 89 objects
-    #new_objs = objects[z_mask] #uncomment if want mask
-    #print('lens', len(new_wavs), len(new_objs))
-    #specc = np.zeros((len(new_wavs),len(new_objs)))
-    #specerrs = np.zeros((len(new_wavs),len(new_objs)))
     spec = []
     spec_err = []
     med_norm = []
@@ -82,67 +76,55 @@ def stacks(list_of_IDs, pd_list):
     spec_ = np.zeros(len(new_wavs))
     spec_errs = np.zeros(len(new_wavs))
     med_spec_units=[]
-    med_spectrum =[]
+    med_spectrum =np.zeros(len(new_wavs))
     for ID in list_of_IDs:
         z = pd_list.loc[ID, 'zspec']
         spectrum = ld.load_vandels_spectra(ID)
-        wav = spectrum[:,0]
-        flux = spectrum[:,1]
-        errors = spectrum[:,2]
-        #print(ID)
-        #plt.plot(wav, flux)
-        #plt.savefig(str(ID)+'.pdf')
-        #plt.close()
-        for f in spectrum[:,1]:
-            if f==0:
-                f = np.nan
-        for e in spectrum[:,2]:
-            if e==0:
-                e = np.nan
-        plt.plot(wav, spectrum[:,1])
-        plt.savefig(str(ID)+'.pdf')
-        plt.close()
+        wav_mask = (spectrum[:,0]>5200) & (spectrum[:,0]<9250)
 
-        rest_wavs = spectrum[:,0]/(1.0 + z)
-        #print(f'rest_wavs={rest_wavs}')
-        #print(max(rest_wavs), min(rest_wavs))
-        #print(f'flux={spectrum[:,1]}')
+        flux = spectrum[:,1][wav_mask]
+        flux_errs = spectrum[:,2][wav_mask]
+        wavs = spectrum[:,0][wav_mask]
+        #print(len(wavs))
+        zeros_mask = (flux == 0.)|(flux_errs == 0.)
+        flux[zeros_mask] = np.nan
+        flux_errs[zeros_mask] = np.nan
+
+        rest_wavs = wavs/(1.0 + z)
         mask =  (rest_wavs > 3000) & (rest_wavs < 3500) # fairly featureless region of spectrum
-        old_spec = spectrum[:,1]/np.nanmedian(spectrum[:,1][mask]) #normalisation median from that region
-        old_errs = spectrum[:,2]/np.nanmedian(spectrum[:,2][mask])
-        med_norm.append(np.nanmedian(spectrum[:,1][mask]))
-        #print(f'old_spec:\n {old_spec}')
-        #input()
+
+        old_spec = flux/np.nanmedian(flux[mask]) #normalisation median from that region
+        old_errs = flux_errs/np.nanmedian(flux[mask])
+
+        #if ID == 'CDFS-GROUND137268SELECT':
+            #plt.plot(wavs, old_spec)
+            #plt.show()
+            #plt.close()
+            #plt.plot(wavs, old_errs)
+            #plt.savefig(str(ID)+'errspec.pdf')
+        med_norm.append(np.nanmedian(flux[mask]))
         new_spec, new_errs = spectres.spectres(new_wavs, rest_wavs, old_spec, spec_errs=old_errs)
-        #print(new_spec)
-        for i in new_spec:
-            i  = float(i)
-        for j in new_errs:
-            j = float(j)
+
         spec.append(new_spec)
         spec_err.append(new_errs)
 
     spec = np.transpose(spec)
-    #print(spec)
-    spec_err = np.transpose(spec_err)
 
+    spec_err = np.transpose(spec_err)
+    standev_err = []
     med_new = np.nanmedian(med_norm)
     for m in range(len(new_wavs)):
         spec_ = spec[m,:]
-        #print(spec_)
-        #input()
+        print(spec_.shape)
         spec_errs = spec_err[m,:]
-        median_spectrum = median_spec[m] #newline
-        #print(np.median(spec_))
-        #input()
+        standev_err[m] = np.std(spec_, axis=0)
         median_spec[m]=np.nanmedian(spec_)
 
-        median_spectrum = median_spec[m]
-        #median_spectrum_units = median_spectrum * np.median(spec_)
 
     med_spec_units = median_spec*med_new
 
     return med_spec_units
+
 
 #med_stack = stacks(objects1)
 #print(med_stack)
@@ -158,10 +140,21 @@ def plot_stackssingle(stack):
     plt.savefig('stack_plot_exc_x_ray_check_nans.pdf')
     plt.close()
 
-#new_waves = np.arange(2400, 4300, 1.25)
-#med_stack_agn = stacks(objects1, ID_list1)
 med_stack_missing = stacks(missing, ID_list)
 plot_stackssingle(med_stack_missing)
+
+"""
+plt.figure(figsize=(15,7))
+plt.plot(new_wavs, errs*10**18, color="black", lw=1.5 )
+plt.xlabel("Wavelength ($\mathrm{\AA}$)", size=15)
+plt.ylabel("Flux $(10^{-18}\ \mathrm{erg\ s^{-1}\ cm^{-2}\ \\AA{^-1})}$", size=15)
+#plt.xlim(2300, 4250)
+plt.ylim(0 ,2.0)
+plt.title('Error Spectrum (standard deviation of median stacks)')# excluding possible AGN (CDFS + UDS)')
+plt.savefig('errs_stack_plot_exc_x_ray_check_nans.pdf')
+plt.close()
+"""
+
 #fig = plt.figure(figsize = (15,7))
 def subplots(med_stack_with_agn, med_stack_missing):
     fig, (ax1, ax2) = plt.subplots(2, figsize = (15,7),sharex=True, sharey=True)

@@ -92,7 +92,6 @@ def stacks(list_of_IDs, pd_list):
 
         rest_wavs = wavs/(1.0 + z)
         mask =  (rest_wavs > 3000) & (rest_wavs < 3500) # fairly featureless region of spectrum
-
         old_spec = flux/np.nanmedian(flux[mask]) #normalisation median from that region
         old_errs = flux_errs/np.nanmedian(flux[mask])
 
@@ -102,6 +101,7 @@ def stacks(list_of_IDs, pd_list):
             #plt.close()
             #plt.plot(wavs, old_errs)
             #plt.savefig(str(ID)+'errspec.pdf')
+
         med_norm.append(np.nanmedian(flux[mask]))
         new_spec, new_errs = spectres.spectres(new_wavs, rest_wavs, old_spec, spec_errs=old_errs)
 
@@ -124,7 +124,6 @@ def stacks(list_of_IDs, pd_list):
     med_spec_units = median_spec*med_new
 
     return med_spec_units
-
 
 #med_stack = stacks(objects1)
 #print(med_stack)

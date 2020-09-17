@@ -13,6 +13,7 @@ from shapely.geometry import Point
 from shapely.geometry.polygon import Polygon
 from astropy.cosmology import FlatLambdaCDM
 from astropy import units as u
+import scipy
 
 both_xray = Table.read('FirstProjectCatalogs/concat_possible_xray_matches_massi.fits').to_pandas()
 
@@ -26,8 +27,8 @@ new_df=pd.concat([df1,df2]).drop_duplicates(subset = 'ID_1', keep=False)
 
 ID_list = new_df.set_index(new_df['FIELD'].str.decode("utf-8").str.rstrip() + new_df['ID_1'].astype(str).str.pad(6, side='left', fillchar='0') + new_df['CAT'].str.decode("utf-8"))
 
-#candels  = Table.read('FirstProjectCatalogs/concat_candels_passive_match.fits').to_pandas()
-concat_3dhst = Table.read('FirstProjectCatalogs/concat_3dhst_passive_match.fits').to_pandas()
+concat_3dhst = Table.read('FirstProjectCatalogs/concat_candels_passive_match.fits').to_pandas()
+#concat_3dhst = Table.read('FirstProjectCatalogs/concat_3dhst_passive_match.fits').to_pandas()
 df = pd.DataFrame(concat_3dhst)
 ID_list1 = np.array(concat_3dhst['FIELD'].str.decode("utf-8").str.rstrip() + concat_3dhst['ID_1'].astype(str).str.pad(6, side='left', fillchar='0') + concat_3dhst['CAT'].str.decode("utf-8"))
 ID_ = df.set_index(concat_3dhst['FIELD'].str.decode("utf-8").str.rstrip() + concat_3dhst['ID_1'].astype(str).str.pad(6, side='left', fillchar='0') + concat_3dhst['CAT'].str.decode("utf-8"))
@@ -68,6 +69,7 @@ for i in ID_list1:
 new_IDs = []
 new_redshifts = []
 size_kpc = []
+size_kpc = []
 dA=[]
 q_ratio = []
 for ID in list_IDs:
@@ -83,15 +85,30 @@ for ID in list_IDs:
         q_ratio.append(ID_.loc[ID, 'q'])
         new_IDs.append(ID)
 #print(all_sizes)
+
+
+kpc_per_arcsec = cosmo.arcsec_per_kpc_comoving(np.array(new_redshifts))
+
+#print(kpc_per_arcsec)
+
+"""
 for z in new_redshifts:
     dA = cosmo.angular_diameter_distance(z)
     all_sizes = np.array(all_sizes)*u.arcsec
     size_kpc=((all_sizes*dA)).to(u.kpc, u.dimensionless_angles())
     size_kpc_errs=((np.array(size_errs)*u.arcsec)*dA).to(u.kpc,u.dimensionless_angles())
 #print(len(all_ages)) #95 objects out of 228 with sizes from the 3D-HST catalog crossmatch
+"""
+
+size_kpc = (np.array(all_sizes)*u.arcsec)/kpc_per_arcsec
+size_kpc_errs = (np.array(size_errs)*u.arcsec)/kpc_per_arcsec
+
+
 #print(all_sizes, '\n', size_kpc, '\n', size_kpc_errs)
 R_c = (np.sqrt(np.array(q_ratio))*size_kpc) /u.kpc
 Rc_errs = (np.sqrt(np.array(q_ratio))*size_kpc_errs) /u.kpc
+
+#print(R_c)
 
 #from Shen et al 2009
 #print(x)
@@ -105,37 +122,53 @@ plt.scatter(np.array(all_masses), np.log10(10**np.array(all_masses)/(R_c)**2), m
 #plt.plot(x_values, (shen+one_sig_scatter)-1, linewidth=0.5, color='r', linestyle='--')
 #plt.plot(x_values, (shen-one_sig_scatter)-1, linewidth=0.5, color='r', linestyle='--')
 plt.xlabel(r'$\mathrm{log_{10}{(M*/M_{\odot})}}$', size = 8)
-plt.ylabel(r'$\mathrm{log_{10}{(M/R_{e}^{2}})}$', size = 8)
+plt.ylabel(r'$\mathrm{log_{10}{(M/R_{c}^{2}})}$', size = 8)
 plt.xticks(fontsize=6)
 plt.yticks(fontsize=6)
 plt.legend(prop={'size': 7})
-plt.title('95 3D-HST passive galaxies mass-density ', size = 8)
+plt.title('90 CANDELS passive galaxies mass-density ', size = 8)
 plt.xlim(9.75, 11.5)
-plt.savefig('Rc_mass_relation_3DHST_density.pdf')
+plt.savefig('Rc_mass_relation_CANDELS_density.pdf')
 #print(10**all_sizes)
 plt.close()
-"""
+
+def model(m,c):
+    return m * x_values + c
+
+x_values = np.linspace(9.7, 11.4, 90)
+
 shen = model(0.56, -5.54) #-1.2
 one_sig_scatter = np.std(shen)
-plt.scatter(np.array(all_masses), np.log10(all_sizes, where=0<all_sizes, out=np.nan*all_sizes), marker='o', s=20, c='r', edgecolors='k')
-plt.plot(x_values, shen-1, linewidth=1.2, color='r', label=r'Shen et al. 2003 ETG relation with 1- $\mathrm{\sigma}$ scatter')
-plt.plot(x_values, (shen+one_sig_scatter)-1, linewidth=0.5, color='r', linestyle='--')
-plt.plot(x_values, (shen-one_sig_scatter)-1, linewidth=0.5, color='r', linestyle='--')
+plt.scatter(np.array(all_masses), np.log10(R_c), marker='o', s=20, c='r', edgecolors='k')
+plt.plot(x_values, shen, linewidth=1.2, color='r', label=r'Shen et al. 2003 ETG relation with 1- $\mathrm{\sigma}$ scatter')
+plt.plot(x_values, (shen+one_sig_scatter), linewidth=0.5, color='r', linestyle='--')
+plt.plot(x_values, (shen-one_sig_scatter), linewidth=0.5, color='r', linestyle='--')
 plt.xlabel(r'$\mathrm{log_{10}{(M*/M_{\odot})}}$', size = 8)
-plt.ylabel(r'$\mathrm{log_{10}{(R_{e}/kpc})}$', size = 8)
+plt.ylabel(r'$\mathrm{log_{10}{(R_{c}/kpc})}$', size = 8)
 plt.xticks(fontsize=6)
 plt.yticks(fontsize=6)
 plt.legend(prop={'size': 7})
 plt.title('90 CANDELS passive galaxies overplot with Shen et al. 2003 relation ', size = 8)
-plt.xlim(9.75, 11.5)
-plt.savefig('Size_mass_relation_CANDELS_offset-1.pdf')
+plt.xlim(9.75, 11.4)
+plt.savefig('R_c_log10M*_relation_CANDELS.pdf')
 #print(10**all_sizes)
+
+
+#stack galaxies above and below the lines
+
+
+#rewrite this code and make sure you get the IDs and all in a table - eg. make a new table for the objects
+#and the ones with sizes to make shit easier so youre not always screwing about with the crap on lines 76 - 87
+
+#cross product for the above and below the lines
+
+"""
 def model(m,c):
     return m * x_values + c #from Shen et al 2009
 
-"""
 
-x_values = np.linspace(9.75, 11.3, 95)
+
+x_values = np.linspace(9.7, 11.3, 90)
 
 def model(m,c):
 
@@ -143,9 +176,9 @@ def model(m,c):
 
     return  mod_vals
 
-m_values = np.arange(0.1, 1.0 ,0.01)
+m_values = np.arange(-5.0, 5.0 ,0.01)
 
-c_values = np.arange(-0.85, 0.85, 0.001)
+c_values = np.arange(-10., -1.1, 0.1)
 
 best_chi  = np.inf
 #best_m = a
@@ -153,9 +186,19 @@ best_chi  = np.inf
 #print(0.434*(Rc_errs/R_c))
 #print(np.log10(R_c))
 log_Rc = np.log10(R_c)
-errs = 0.434*(Rc_errs/R_c)
-print(log_Rc)
+
+errors = (np.log10(R_c + Rc_errs) - np.log10(R_c - Rc_errs))/2
+#print(errors)
+
+SNR = R_c/Rc_errs
+
+#print('SNR = ', R_c/Rc_errs)
+
+
+#errs = 0.434*(Rc_errs/R_c)
+#print(log_Rc)
 #print(errs)
+
 
 for mvals in range(len(m_values)):
     m_vals = m_values[mvals]
@@ -167,8 +210,8 @@ for mvals in range(len(m_values)):
         diffs = (np.log10(R_c) - y_model)
 
         #print(diffs)
-        #print(y_model, '\n', np.log10(R_c))
-        chisq = np.sum(diffs**2/((0.434*(Rc_errs/R_c))**2))
+        #print(y_model, '\n', np.log10(R_c))#(0.434*(Rc_errs/R_c)
+        chisq = np.sum((diffs**2)/((errors)**2))
 
         if chisq < best_chi:
             best_m = m_vals
@@ -176,21 +219,20 @@ for mvals in range(len(m_values)):
             best_chi = chisq
 
 print(f'best_m {best_m} \n best_c {best_c} \n best_chi {best_chi}')
+#print('mean SNR = ', R_c/Rc_errs)
 
-#def model(m,c):
-#    return m * np.linspace(9.8, 11.5, 95) + c #from Shen et al 2009
-#ymodel = log_model(best_m, best_c)
+
 ymodel=model(best_m, best_c)
 topcat = model(0.5192562, -6.1182485)
-shen = (model(0.56, -5.54)
+shen = model(0.56, -5.54)#- np.log10(1.5)
 one_sig_scatter = np.std(shen)
 
 plt.scatter(all_masses, np.log10(R_c), marker='o', s=20, c='r', edgecolors='k')
-plt.plot(x_values, ymodel, linewidth=1.2, color='k', label='Best fit line', )
-plt.plot(x_values, shen- np.log10(1.5)), linewidth=1.2, color='r', label=r'Shen et al. 2003 ETG relation with 1- $\mathrm{\sigma}$ scatter')
-plt.plot(x_values, (shen+one_sig_scatter)- np.log10(1.5)), linewidth=0.5, color='r', linestyle='--')
-plt.plot(x_values, (shen-one_sig_scatter)- np.log10(1.5)), linewidth=0.5, color='r', linestyle='--')
-plt.errorbar(np.array(all_masses), np.log10(R_c), yerr = 0.434*(Rc_errs/R_c), linestyle=' ')
+#plt.plot(x_values, ymodel, linewidth=1.2, color='k', label='Best fit line', )
+plt.plot(x_values, shen, linewidth=1.2, color='r', label=r'Shen et al. 2003 ETG relation with 1- $\mathrm{\sigma}$ scatter')
+plt.plot(x_values, (shen+one_sig_scatter), linewidth=0.5, color='r', linestyle='--')
+plt.plot(x_values, (shen-one_sig_scatter), linewidth=0.5, color='r', linestyle='--')
+plt.errorbar(np.array(all_masses), np.log10(R_c), yerr = errors, linestyle=' ')
 #plt.plot(x_values, topcat, linewidth=1.0, color='g'  (1/2.303)*(Rc_errs/R_c)
 plt.xlabel(r'$\mathrm{log_{10}{(M*/M_{\odot})}}$', size = 8)
 plt.ylabel(r'$\mathrm{log_{10}{(R_{c}/kpc})}$', size = 8)
@@ -198,20 +240,16 @@ plt.ylabel(r'$\mathrm{log_{10}{(R_{c}/kpc})}$', size = 8)
 plt.xticks(fontsize=6)
 plt.yticks(fontsize=6)
 plt.legend(prop={'size': 7})
-plt.title('95 passive galaxies overplot with Shen et al. 2003 relation and best fit line', size = 8)
+plt.title('95 passive galaxies overplot with Shen et al. 2003 relation', size = 8)
 plt.xlim(9.8, 11.3)
 plt.ylim(-0.75, 1.5)
-plt.savefig('Rc_mass_relation_3dhst_shen+bestfit.pdf')
+plt.savefig('Rc_log10M*_CANDELS_shen.pdf')
 plt.close()
 stack_obs_above = []
 stack_obs_below=[]
 objID = vandels_cat_pipes["#ID"]
 
-
-
-
-
-
+"""
 
 """
 cross = np.cross(all_sizes, shen)

@@ -27,8 +27,8 @@ new_df=pd.concat([df1,df2]).drop_duplicates(subset = 'ID_1', keep=False)
 
 ID_list = new_df.set_index(new_df['FIELD'].str.decode("utf-8").str.rstrip() + new_df['ID_1'].astype(str).str.pad(6, side='left', fillchar='0') + new_df['CAT'].str.decode("utf-8"))
 
-concat_3dhst = Table.read('FirstProjectCatalogs/concat_candels_passive_match.fits').to_pandas()
-#concat_3dhst = Table.read('FirstProjectCatalogs/concat_3dhst_passive_match.fits').to_pandas()
+#concat_3dhst = Table.read('FirstProjectCatalogs/concat_candels_passive_match.fits').to_pandas()
+concat_3dhst = Table.read('FirstProjectCatalogs/concat_3dhst_passive_match.fits').to_pandas()
 df = pd.DataFrame(concat_3dhst)
 ID_list1 = np.array(concat_3dhst['FIELD'].str.decode("utf-8").str.rstrip() + concat_3dhst['ID_1'].astype(str).str.pad(6, side='left', fillchar='0') + concat_3dhst['CAT'].str.decode("utf-8"))
 ID_ = df.set_index(concat_3dhst['FIELD'].str.decode("utf-8").str.rstrip() + concat_3dhst['ID_1'].astype(str).str.pad(6, side='left', fillchar='0') + concat_3dhst['CAT'].str.decode("utf-8"))
@@ -87,9 +87,13 @@ for ID in list_IDs:
 #print(all_sizes)
 
 
-kpc_per_arcsec = cosmo.arcsec_per_kpc_comoving(np.array(new_redshifts))
+arcsec_per_kpc = cosmo.arcsec_per_kpc_proper(np.array(new_redshifts))
 
-#print(kpc_per_arcsec)
+print(np.array(new_redshifts))
+
+
+print(arcsec_per_kpc)
+
 
 """
 for z in new_redshifts:
@@ -100,8 +104,8 @@ for z in new_redshifts:
 #print(len(all_ages)) #95 objects out of 228 with sizes from the 3D-HST catalog crossmatch
 """
 
-size_kpc = (np.array(all_sizes)*u.arcsec)/kpc_per_arcsec
-size_kpc_errs = (np.array(size_errs)*u.arcsec)/kpc_per_arcsec
+size_kpc = (np.array(all_sizes)*u.arcsec)/arcsec_per_kpc
+size_kpc_errs = (np.array(size_errs)*u.arcsec)/arcsec_per_kpc
 
 
 #print(all_sizes, '\n', size_kpc, '\n', size_kpc_errs)
@@ -126,31 +130,31 @@ plt.ylabel(r'$\mathrm{log_{10}{(M/R_{c}^{2}})}$', size = 8)
 plt.xticks(fontsize=6)
 plt.yticks(fontsize=6)
 plt.legend(prop={'size': 7})
-plt.title('90 CANDELS passive galaxies mass-density ', size = 8)
+plt.title('95 3DHST passive galaxies mass-density ', size = 8)
 plt.xlim(9.75, 11.5)
-plt.savefig('Rc_mass_relation_CANDELS_density.pdf')
+plt.savefig('Rc_mass_relation_3DHST_density.pdf')
 #print(10**all_sizes)
 plt.close()
 
 def model(m,c):
     return m * x_values + c
 
-x_values = np.linspace(9.7, 11.4, 90)
+x_values = np.linspace(9.7, 11.4, 95)
 
 shen = model(0.56, -5.54) #-1.2
 one_sig_scatter = np.std(shen)
 plt.scatter(np.array(all_masses), np.log10(R_c), marker='o', s=20, c='r', edgecolors='k')
-plt.plot(x_values, shen, linewidth=1.2, color='r', label=r'Shen et al. 2003 ETG relation with 1- $\mathrm{\sigma}$ scatter')
-plt.plot(x_values, (shen+one_sig_scatter), linewidth=0.5, color='r', linestyle='--')
-plt.plot(x_values, (shen-one_sig_scatter), linewidth=0.5, color='r', linestyle='--')
+plt.plot(x_values, shen-np.log10(2.43), linewidth=1.2, color='r', label=r'Shen et al. 2003 ETG relation with 1- $\mathrm{\sigma}$ scatter')
+plt.plot(x_values, (shen+one_sig_scatter)-np.log10(2.43), linewidth=0.5, color='r', linestyle='--')
+plt.plot(x_values, (shen-one_sig_scatter)-np.log10(2.43), linewidth=0.5, color='r', linestyle='--')
 plt.xlabel(r'$\mathrm{log_{10}{(M*/M_{\odot})}}$', size = 8)
 plt.ylabel(r'$\mathrm{log_{10}{(R_{c}/kpc})}$', size = 8)
 plt.xticks(fontsize=6)
 plt.yticks(fontsize=6)
 plt.legend(prop={'size': 7})
-plt.title('90 CANDELS passive galaxies overplot with Shen et al. 2003 relation ', size = 8)
+plt.title('95 3DHST passive galaxies overplot with Shen et al. 2003 relation ', size = 8)
 plt.xlim(9.75, 11.4)
-plt.savefig('R_c_log10M*_relation_CANDELS.pdf')
+plt.savefig('R_c_log10M_kpcproper_relation_3DHST.pdf')
 #print(10**all_sizes)
 
 

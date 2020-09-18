@@ -41,7 +41,7 @@ ID_list2 = df2.set_index(passive_cut['FIELD'].str.decode("utf-8").str.rstrip() +
 
 all_obs = np.array(passive_cut['FIELD'].str.decode("utf-8").str.rstrip() + passive_cut['ID_1'].astype(str).str.pad(6, side='left', fillchar='0') + passive_cut['CAT'].str.decode("utf-8"))
 #print(ID_list.type)
-missing = list(set(all_obs).difference(objects1))
+objects_list = list(set(all_obs).difference(objects1))
 
 #df = df2.merge(df1, how = 'outer' ,indicator=True).loc[lambda x : x['_merge']=='left_only']
 #print(df)
@@ -53,13 +53,12 @@ new_df=pd.concat([df1,df2]).drop_duplicates(subset = 'ID_1', keep=False)
 #print(new_df)
 
 ID_list = new_df.set_index(new_df['FIELD'].str.decode("utf-8").str.rstrip() + new_df['ID_1'].astype(str).str.pad(6, side='left', fillchar='0') + new_df['CAT'].str.decode("utf-8"))
-#print(ID_list)
-#print(len(ID_list))
-print(len(missing))
+
 
 new_wavs = np.arange(2400, 4200, 1.25)
 
-def stacks(list_of_IDs, pd_list):
+
+def stacks(objects_list): #input array of redshifts for given list of objects
     new_spec = np.zeros(len(new_wavs))
     new_errs = np.zeros(len(new_wavs))
 
@@ -77,15 +76,17 @@ def stacks(list_of_IDs, pd_list):
     spec_errs = np.zeros(len(new_wavs))
     med_spec_units=[]
     med_spectrum =np.zeros(len(new_wavs))
-    for ID in list_of_IDs:
-        z = pd_list.loc[ID, 'zspec']
+    for ID in objects_list:
+        z = ID_list.loc[ID, 'zspec']
+        #define the list of objects outside of function- must be an array of IDs as strings
+        #in format e.g. CDFS_HST034930SELECT
         spectrum = ld.load_vandels_spectra(ID)
         wav_mask = (spectrum[:,0]>5200) & (spectrum[:,0]<9250)
 
         flux = spectrum[:,1][wav_mask]
         flux_errs = spectrum[:,2][wav_mask]
         wavs = spectrum[:,0][wav_mask]
-        #print(len(wavs))
+
         zeros_mask = (flux == 0.)|(flux_errs == 0.)
         flux[zeros_mask] = np.nan
         flux_errs[zeros_mask] = np.nan
@@ -94,13 +95,6 @@ def stacks(list_of_IDs, pd_list):
         mask =  (rest_wavs > 3000) & (rest_wavs < 3500) # fairly featureless region of spectrum
         old_spec = flux/np.nanmedian(flux[mask]) #normalisation median from that region
         old_errs = flux_errs/np.nanmedian(flux[mask])
-
-        #if ID == 'CDFS-GROUND137268SELECT':
-            #plt.plot(wavs, old_spec)
-            #plt.show()
-            #plt.close()
-            #plt.plot(wavs, old_errs)
-            #plt.savefig(str(ID)+'errspec.pdf')
 
         med_norm.append(np.nanmedian(flux[mask]))
         new_spec, new_errs = spectres.spectres(new_wavs, rest_wavs, old_spec, spec_errs=old_errs)
@@ -115,11 +109,10 @@ def stacks(list_of_IDs, pd_list):
     med_new = np.nanmedian(med_norm)
     for m in range(len(new_wavs)):
         spec_ = spec[m,:]
-        print(spec_.shape)
+        #print(spec_.shape)
         spec_errs = spec_err[m,:]
-        standev_err[m] = np.std(spec_, axis=0)
+        #standev_err[m] = np.std(spec_, axis=0)
         median_spec[m]=np.nanmedian(spec_)
-
 
     med_spec_units = median_spec*med_new
 
@@ -139,7 +132,8 @@ def plot_stackssingle(stack):
     plt.savefig('stack_plot_exc_x_ray_check_nans.pdf')
     plt.close()
 
-med_stack_missing = stacks(missing, ID_list)
+#med_stack_missing = stacks(missing, ID_list)
+med_stack_missing = stacks(objects_list)
 plot_stackssingle(med_stack_missing)
 
 """

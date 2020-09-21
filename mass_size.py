@@ -347,6 +347,8 @@ print(len(stack_obs_above))
 #for ID in stack_obs_above:
 #    z = ID_.loc[ID, 'zspec']
 
+#below = 32 objects being stacked
+#above = 28 objects being stacked
 
 stacking_above = stacks(stack_obs_above)
 new_wavs = np.arange(2400, 4200, 1.25)
@@ -358,7 +360,7 @@ def plot_stackssingle(stack, name):
     plt.ylabel("Flux $(10^{-18}\ \mathrm{erg\ s^{-1}\ cm^{-2}\ \\AA{^-1})}$", size=15)
     #plt.xlim(2300, 4250)
     plt.ylim(0 ,2.0)
-    plt.title('Median Stacked Spectra above Shen relation')# excluding possible AGN (CDFS + UDS)')
+    plt.title('median stacks '+ str(name) +' line \n (10.5 < log(M*) < 11.0)')# excluding possible AGN (CDFS + UDS)')
     plt.savefig('stacking_'+str(name)+'_relation.pdf')
     plt.close()
 

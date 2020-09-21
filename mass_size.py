@@ -132,7 +132,9 @@ plt.yticks(fontsize=6)
 plt.legend(prop={'size': 7})
 plt.title('95 3DHST passive galaxies mass-density ', size = 8)
 plt.xlim(9.75, 11.5)
-plt.savefig('Rc_mass_relation_3DHST_density.pdf')
+#plt.show()
+
+#plt.savefig('Rc_mass_relation_3DHST_density.pdf')
 #print(10**all_sizes)
 plt.close()
 
@@ -143,20 +145,27 @@ x_values = np.linspace(9.7, 11.4, 95)
 
 shen = model(0.56, -5.54) #-1.2
 one_sig_scatter = np.std(shen)
-plt.scatter(np.array(all_masses), np.log10(R_c), marker='o', s=20, c='r', edgecolors='k')
+fig, ax = plt.subplots(figsize=[10,7.5])
+
+im = ax.scatter(np.array(all_masses), np.log10(R_c), s=50, c=new_redshifts, cmap=plt.cm.inferno, marker='o', edgecolors='black',  linewidth=0.5 )
+cbar = fig.colorbar(im, ax=ax)
+#cbar.set_label(r'$\mathrm{log_{10}(sSFR/yr)}$')
+cbar.set_label(r'Redshift, z', size=12)
+#plt.scatter(np.array(all_masses), np.log10(R_c), marker='o', s=20, c='r', edgecolors='k')
 plt.plot(x_values, shen-np.log10(2.43), linewidth=1.2, color='r', label=r'Shen et al. 2003 ETG relation with 1- $\mathrm{\sigma}$ scatter')
 plt.plot(x_values, (shen+one_sig_scatter)-np.log10(2.43), linewidth=0.5, color='r', linestyle='--')
 plt.plot(x_values, (shen-one_sig_scatter)-np.log10(2.43), linewidth=0.5, color='r', linestyle='--')
-plt.xlabel(r'$\mathrm{log_{10}{(M*/M_{\odot})}}$', size = 8)
-plt.ylabel(r'$\mathrm{log_{10}{(R_{c}/kpc})}$', size = 8)
-plt.xticks(fontsize=6)
-plt.yticks(fontsize=6)
-plt.legend(prop={'size': 7})
-plt.title('95 3DHST passive galaxies overplot with Shen et al. 2003 relation ', size = 8)
+plt.xlabel(r'$\mathrm{log_{10}{(M*/M_{\odot})}}$', size = 13)
+plt.ylabel(r'$\mathrm{log_{10}{(R_{c}/kpc})}$', size = 13)
+plt.xticks(fontsize=12)
+plt.yticks(fontsize=12)
+plt.legend(prop={'size': 11})
+plt.title('95 3DHST passive galaxies overplot with Shen et al. 2003 relation ', size = 13)
 plt.xlim(9.75, 11.4)
-plt.savefig('R_c_log10M_kpcproper_relation_3DHST.pdf')
+#plt.show()
+#plt.savefig('redshifts_R_c_log10M_kpcproper_relation_3DHST.pdf')
 #print(10**all_sizes)
-
+plt.close()
 
 #stack galaxies above and below the lines
 
@@ -166,21 +175,18 @@ plt.savefig('R_c_log10M_kpcproper_relation_3DHST.pdf')
 
 #cross product for the above and below the lines
 
-"""
+
 def model(m,c):
     return m * x_values + c #from Shen et al 2009
 
 
+def model(c):
 
-x_values = np.linspace(9.7, 11.3, 90)
-
-def model(m,c):
-
-    mod_vals = (m * x_values) + c
+    mod_vals = (0.56 * x_values) + c
 
     return  mod_vals
 
-m_values = np.arange(-5.0, 5.0 ,0.01)
+#m_values = np.arange(-5.0, 5.0 ,0.01)
 
 c_values = np.arange(-10., -1.1, 0.1)
 
@@ -191,7 +197,7 @@ best_chi  = np.inf
 #print(np.log10(R_c))
 log_Rc = np.log10(R_c)
 
-errors = (np.log10(R_c + Rc_errs) - np.log10(R_c - Rc_errs))/2
+errors = (np.log10(R_c + 10*Rc_errs) - np.log10(R_c - 10*Rc_errs))/2
 #print(errors)
 
 SNR = R_c/Rc_errs
@@ -199,86 +205,105 @@ SNR = R_c/Rc_errs
 #print('SNR = ', R_c/Rc_errs)
 
 
-#errs = 0.434*(Rc_errs/R_c)
+errs = 0.434*(10*Rc_errs/R_c)
 #print(log_Rc)
 #print(errs)
 
+#for mvals in range(len(m_values)):
+#    m_vals = m_values[mvals]
+for cvals in range(len(c_values)):
+    c_vals = c_values[cvals]
 
-for mvals in range(len(m_values)):
-    m_vals = m_values[mvals]
-    for cvals in range(len(c_values)):
-        c_vals = c_values[cvals]
+    y_model = model(c_vals)
 
-        y_model = model(m_vals, c_vals)
+    diffs = (np.log10(R_c) - y_model)
 
-        diffs = (np.log10(R_c) - y_model)
+    #print(diffs)
+    #print(y_model, '\n', np.log10(R_c))#(0.434*(Rc_errs/R_c)
+    chisq = np.sum((diffs**2)/((errs)**2))
 
-        #print(diffs)
-        #print(y_model, '\n', np.log10(R_c))#(0.434*(Rc_errs/R_c)
-        chisq = np.sum((diffs**2)/((errors)**2))
+    if chisq < best_chi:
+        #best_m = m_vals
+        best_c = c_vals
+        best_chi = chisq
 
-        if chisq < best_chi:
-            best_m = m_vals
-            best_c = c_vals
-            best_chi = chisq
-
-print(f'best_m {best_m} \n best_c {best_c} \n best_chi {best_chi}')
+print(f'best_c {best_c} \n best_chi {best_chi}')
 #print('mean SNR = ', R_c/Rc_errs)
 
+y_model2= model(best_c)
 
-ymodel=model(best_m, best_c)
-topcat = model(0.5192562, -6.1182485)
-shen = model(0.56, -5.54)#- np.log10(1.5)
+
+
+def nmodel(m,c):
+    return m * x_values + c #from Shen et al 2009
+
+topcat = nmodel(0.5192562, -6.1182485)
+shen = nmodel(0.56, -5.54)#- np.log10(1.5)
+
+#print((shen - y_model2))
+#print(np.log10(2.43))
+print(np.std(y_model2))
+print(np.std(shen))
+
 one_sig_scatter = np.std(shen)
+fig1, ax1 = plt.subplots(figsize=[12,8.5])
 
-plt.scatter(all_masses, np.log10(R_c), marker='o', s=20, c='r', edgecolors='k')
-#plt.plot(x_values, ymodel, linewidth=1.2, color='k', label='Best fit line', )
-plt.plot(x_values, shen, linewidth=1.2, color='r', label=r'Shen et al. 2003 ETG relation with 1- $\mathrm{\sigma}$ scatter')
-plt.plot(x_values, (shen+one_sig_scatter), linewidth=0.5, color='r', linestyle='--')
-plt.plot(x_values, (shen-one_sig_scatter), linewidth=0.5, color='r', linestyle='--')
-plt.errorbar(np.array(all_masses), np.log10(R_c), yerr = errors, linestyle=' ')
-#plt.plot(x_values, topcat, linewidth=1.0, color='g'  (1/2.303)*(Rc_errs/R_c)
-plt.xlabel(r'$\mathrm{log_{10}{(M*/M_{\odot})}}$', size = 8)
-plt.ylabel(r'$\mathrm{log_{10}{(R_{c}/kpc})}$', size = 8)
-
-plt.xticks(fontsize=6)
-plt.yticks(fontsize=6)
-plt.legend(prop={'size': 7})
-plt.title('95 passive galaxies overplot with Shen et al. 2003 relation', size = 8)
-plt.xlim(9.8, 11.3)
-plt.ylim(-0.75, 1.5)
-plt.savefig('Rc_log10M*_CANDELS_shen.pdf')
+im1 = ax1.scatter(np.array(all_masses), np.log10(R_c), s=50, c=new_redshifts, cmap=plt.cm.magma, marker='o', edgecolors='black',  linewidth=0.5 )
+cbar = fig1.colorbar(im1, ax=ax1)
+#cbar.set_label(r'$\mathrm{log_{10}(sSFR/yr)}$')
+cbar.set_label(r'Redshift, z', size=12)
+#plt.scatter(np.array(all_masses), np.log10(R_c), marker='o', s=20, c='r', edgecolors='k')
+#ax1.plot(x_values, y_model2, linewidth=2, color='r', label='Best fit Shen et al. normalised by $\mathrm{f_{g} = 1.82}$')
+#ax1.plot(x_values, y_model2+np.std(y_model2), linewidth=1., color='r', ls = ':') #label='Best fit Shen et al. normalised by $\mathrm{f_{g} = 1.82}$')
+#ax1.plot(x_values, y_model2-np.std(y_model2), linewidth=1., color='r', ls = ':')#label='Best fit Shen et al. normalised by $\mathrm{f_{g} = 1.82}$')
+ax1.plot(x_values, shen, linewidth=2, color='r', label='Shen et al. 2003 ETG relation with 1-$\mathrm{\sigma}$ scatter' )#\n & McLure et al. 2013 ($\mathrm{f_{g} = 2.43}$)')
+ax1.plot(x_values, (shen+one_sig_scatter), linewidth=1., color='r', linestyle=':')
+ax1.plot(x_values, (shen-one_sig_scatter), linewidth=1., color='r', linestyle=':')
+ax1.set_xlabel(r'$\mathrm{log_{10}{(M*/M_{\odot})}}$', size = 13) #-np.log10(2.43)
+ax1.set_ylabel(r'$\mathrm{log_{10}{(R_{c}/kpc})}$', size = 13)
+plt.xticks(fontsize=12)
+plt.yticks(fontsize=12)
+plt.legend(prop={'size': 11}) #$\mathrm{R_{c}}$
+plt.title('95 passive VANDELS galaxies with 3D-HST half-light radii', size = 13)
+ax1.set_xlim(9.75, 11.4)
+#plt.show()
+#plt.savefig('redshifts_R_c_log10M_onlyshen_no_norm_3DHST.pdf')
 plt.close()
+
 stack_obs_above = []
 stack_obs_below=[]
 objID = vandels_cat_pipes["#ID"]
 
-"""
+#print(np.log10(R_c).value)#, '\n', np.transpose(np.log10(R_c)))
 
-"""
-cross = np.cross(all_sizes, shen)
-for s in cross:
-    if s > 0:
-        stack_obs_above.append(new_IDs[s])
+size_mass = np.transpose(np.array([all_masses, np.log10(R_c).value]))
+shen_x = np.transpose(np.array([x_values, shen]))
+print(shen_x)
+cross = np.cross(size_mass, shen_x)
+
+print(cross)
+print(new_IDs)
+mask = cross < 0
+print(len(np.log10(R_c).value[mask]))
+ind = all_masses.value[mask]
+
+print(ind)
+
+print(new_IDs.index(np.log10(R_c).value[mask]))
+
+print(np.log10(R_c).value[mask].index(all_sizes))
+#for ob in np.log10(R_c):
+#    ind.append(list(np.log10(R_c).value[mask]).index(ob.value))
+#print(ind)
+    #stack_obs_above.append(new_IDs[ind])
 
 
-print(stack_obs_above)
-#stacks1 = all_sizes[all_sizes<(np.array(shen)-1)]
-
-#print(len(stacks1))
+#print(stack_obs_above)
 
 
-#print(shen-1)
-for vals in np.array(shen):
-    for obj in all_sizes:
-        if obj > vals:
-            stack_obs_above.append(new_IDs.index(objs))#.decode("utf-8")
-        else:
-            stack_obs_below.append(new_IDs.index(objs))#.decode("utf-8"))
 
-print(stack_obs_above, '\n', stack_obs_below)
 
-"""
+
 
 
 #for ID in list_IDs:

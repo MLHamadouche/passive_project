@@ -14,6 +14,7 @@ from shapely.geometry.polygon import Polygon
 from astropy.cosmology import FlatLambdaCDM
 from astropy import units as u
 import scipy
+from stacking_code import stacks
 
 both_xray = Table.read('FirstProjectCatalogs/concat_possible_xray_matches_massi.fits').to_pandas()
 
@@ -277,34 +278,96 @@ objID = vandels_cat_pipes["#ID"]
 #print(np.log10(R_c).value)#, '\n', np.transpose(np.log10(R_c)))
 
 size_mass = np.transpose(np.array([all_masses, np.log10(R_c).value]))
-shen_x = np.transpose(np.array([x_values, shen]))
-print(shen_x)
-cross = np.cross(size_mass, shen_x)
+#shen_x = np.transpose(np.array([x_values, shen]))
+y_model2_x = np.transpose(np.array([x_values, y_model2]))
 
-print(cross)
-print(new_IDs)
-mask = cross < 0
-print(len(np.log10(R_c).value[mask]))
-ind = all_masses.value[mask]
+#print(shen_x)
+cross = np.cross(size_mass, y_model2_x)
 
-print(ind)
+#print(cross)
+#print(new_IDs)
 
-print(new_IDs.index(np.log10(R_c).value[mask]))
+#print(len(np.log10(R_c).value[mask]))
+#ind = all_masses.value[mask]
 
-print(np.log10(R_c).value[mask].index(all_sizes))
+#print(ind)
+
+#print(new_IDs.index(np.log10(R_c).value[mask]))
+
+#print(np.log10(R_c).value[mask].index(all_sizes))
 #for ob in np.log10(R_c):
 #    ind.append(list(np.log10(R_c).value[mask]).index(ob.value))
 #print(ind)
     #stack_obs_above.append(new_IDs[ind])
 
 
+
+col1 = fits.Column(name='ID', format='30A', array=new_IDs)
+col2 = fits.Column(name='redshifts', format='E', array=new_redshifts)
+col3 = fits.Column(name='age', format='E',  array=all_ages)
+col4 = fits.Column(name='log10(M*)', format='E', array=all_masses)
+col5 = fits.Column(name='R_c', format='E', array=R_c)
+col6 = fits.Column(name='Rc_errs', format='E', array=Rc_errs)
+
+
+hdu = fits.BinTableHDU.from_columns([col1, col2, col3, col4, col5, col6])
+#hdu = fits.BinTableHDU.from_columns([col1, col2, col3, col4, col9, col5, col6 ])
+#file =  "R_c_v_mass_passive_cat.fits"
+#hdu.writeto(file)
 #print(stack_obs_above)
 
+cat = Table.read("R_c_v_mass_passive_cat.fits").to_pandas()
+masses = cat['log10(M*)']
+
+mass_mask = (masses > 10.5) & (masses < 11)
+dataframe = pd.DataFrame(cat)
+mask = cross[mass_mask] > 0
+cat_mask = pd.DataFrame(cat[mass_mask])
+circ_radii = cat_mask['R_c']
+print(len(circ_radii))
+ind = cat[mass_mask].set_index(cat_mask['ID'].str.decode("utf-8").str.rstrip())
+
+index = np.log10(circ_radii)[mask].index.to_list()
+
+mask2 = cross[mass_mask] < 0
+index2 = np.log10(circ_radii)[mask2].index.to_list()
 
 
+#print(len(cat_mask))
+
+for i in index:
+    stack_obs_above.append(cat_mask['ID'].str.decode("utf-8").str.rstrip()[i])
+
+for id in index2:
+    stack_obs_below.append(cat_mask['ID'].str.decode("utf-8").str.rstrip()[id])
 
 
+print(len(stack_obs_below))
+print(len(stack_obs_above))
+#for ID in stack_obs_above:
+#    z = ID_.loc[ID, 'zspec']
 
+
+stacking_above = stacks(stack_obs_above)
+new_wavs = np.arange(2400, 4200, 1.25)
+
+def plot_stackssingle(stack, name):
+    plt.figure(figsize=(15,7))
+    plt.plot(new_wavs, stack*10**18, color="black", lw=1.5 )
+    plt.xlabel("Wavelength ($\mathrm{\AA}$)", size=15)
+    plt.ylabel("Flux $(10^{-18}\ \mathrm{erg\ s^{-1}\ cm^{-2}\ \\AA{^-1})}$", size=15)
+    #plt.xlim(2300, 4250)
+    plt.ylim(0 ,2.0)
+    plt.title('Median Stacked Spectra above Shen relation')# excluding possible AGN (CDFS + UDS)')
+    plt.savefig('stacking_'+str(name)+'_relation.pdf')
+    plt.close()
+
+plot_stackssingle(stacking_above, 'above')
+
+
+stacking_below = stacks(stack_obs_below)
+
+plot_stackssingle(stacking_below,'below')
 
 #for ID in list_IDs:
     #new_re.append(ID_.loc[ID, 're'])

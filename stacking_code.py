@@ -26,6 +26,13 @@ spectrum[:,2] = flux errors. new_wavs is defined inside the function but can be 
 #all_obs = np.array(passive_cut['FIELD'].str.decode("utf-8").str.rstrip() + passive_cut['ID_1'].astype(str).str.pad(6, side='left', fillchar='0') + passive_cut['CAT'].str.decode("utf-8"))
 #objects_list = list(set(all_obs).difference(objects1)) #<- list of IDs####
 
+
+concat_3dhst = Table.read('FirstProjectCatalogs/concat_3dhst_passive_match.fits').to_pandas()
+df = pd.DataFrame(concat_3dhst)
+
+ID_ = df.set_index(concat_3dhst['FIELD'].str.decode("utf-8").str.rstrip() + concat_3dhst['ID_1'].astype(str).str.pad(6, side='left', fillchar='0') + concat_3dhst['CAT'].str.decode("utf-8"))
+
+
 def stacks(objects_list): #input array of redshifts for given list of objects
     new_wavs = np.arange(2400, 4200, 1.25)
     new_spec = np.zeros(len(new_wavs))
@@ -46,7 +53,7 @@ def stacks(objects_list): #input array of redshifts for given list of objects
     med_spec_units=[]
     med_spectrum =np.zeros(len(new_wavs))
     for ID in objects_list:
-        z = ID_list.loc[ID, 'zspec']
+        z = ID_.loc[ID, 'zspec']
         spectrum = ld.load_vandels_spectra(ID)
         wav_mask = (spectrum[:,0]>5200) & (spectrum[:,0]<9250)
 

@@ -28,7 +28,7 @@ new_df=pd.concat([df1,df2]).drop_duplicates(subset = 'ID_1', keep=False)
 
 ID_list = new_df.set_index(new_df['FIELD'].str.decode("utf-8").str.rstrip() + new_df['ID_1'].astype(str).str.pad(6, side='left', fillchar='0') + new_df['CAT'].str.decode("utf-8"))
 
-#concat_3dhst = Table.read('FirstProjectCatalogs/concat_candels_passive_match.fits').to_pandas()
+#candels = Table.read('FirstProjectCatalogs/concat_candels_passive_match.fits').to_pandas()
 concat_3dhst = Table.read('FirstProjectCatalogs/concat_3dhst_passive_match.fits').to_pandas()
 df = pd.DataFrame(concat_3dhst)
 ID_list1 = np.array(concat_3dhst['FIELD'].str.decode("utf-8").str.rstrip() + concat_3dhst['ID_1'].astype(str).str.pad(6, side='left', fillchar='0') + concat_3dhst['CAT'].str.decode("utf-8"))
@@ -86,10 +86,10 @@ for ID in list_IDs:
         q_ratio.append(ID_.loc[ID, 'q'])
         new_IDs.append(ID)
 #print(all_sizes)
-
+#new IDs has passive galaxies excluding possible AGN found in the 3DHST catalog/CANDELS catalog
 
 arcsec_per_kpc = cosmo.arcsec_per_kpc_proper(np.array(new_redshifts))
-
+print('max=', max(all_sizes))
 print(np.array(new_redshifts))
 
 
@@ -114,6 +114,7 @@ R_c = (np.sqrt(np.array(q_ratio))*size_kpc) /u.kpc
 Rc_errs = (np.sqrt(np.array(q_ratio))*size_kpc_errs) /u.kpc
 
 #print(R_c)
+
 
 #from Shen et al 2009
 #print(x)
@@ -254,22 +255,22 @@ cbar = fig1.colorbar(im1, ax=ax1)
 #cbar.set_label(r'$\mathrm{log_{10}(sSFR/yr)}$')
 cbar.set_label(r'Redshift, z', size=12)
 #plt.scatter(np.array(all_masses), np.log10(R_c), marker='o', s=20, c='r', edgecolors='k')
-#ax1.plot(x_values, y_model2, linewidth=2, color='r', label='Best fit Shen et al. normalised by $\mathrm{f_{g} = 1.82}$')
-#ax1.plot(x_values, y_model2+np.std(y_model2), linewidth=1., color='r', ls = ':') #label='Best fit Shen et al. normalised by $\mathrm{f_{g} = 1.82}$')
-#ax1.plot(x_values, y_model2-np.std(y_model2), linewidth=1., color='r', ls = ':')#label='Best fit Shen et al. normalised by $\mathrm{f_{g} = 1.82}$')
-ax1.plot(x_values, shen, linewidth=2, color='r', label='Shen et al. 2003 ETG relation with 1-$\mathrm{\sigma}$ scatter' )#\n & McLure et al. 2013 ($\mathrm{f_{g} = 2.43}$)')
-ax1.plot(x_values, (shen+one_sig_scatter), linewidth=1., color='r', linestyle=':')
-ax1.plot(x_values, (shen-one_sig_scatter), linewidth=1., color='r', linestyle=':')
+ax1.plot(x_values, y_model2, linewidth=2, color='r', label='Best fit Shen et al. normalised by $\mathrm{f = 1.82}$')
+ax1.plot(x_values, y_model2+np.std(y_model2), linewidth=1., color='r', ls = ':')#label='Best fit Shen et al. normalised by $\mathrm{f_{g} = 1.82}$')
+ax1.plot(x_values, y_model2-np.std(y_model2), linewidth=1., color='r', ls = ':')#label='Best fit Shen et al. normalised by $\mathrm{f_{g} = 1.82}$')
+ax1.plot(x_values, shen, linewidth=2, color='k', label='Shen et al. 2003 local ETG relation with 1-$\mathrm{\sigma}$ scatter' )#\n & McLure et al. 2013 ($\mathrm{f_{g} = 2.43}$)')
+ax1.plot(x_values, (shen+one_sig_scatter), linewidth=1., color='k', linestyle=':')
+ax1.plot(x_values, (shen-one_sig_scatter), linewidth=1., color='k', linestyle=':')
 ax1.set_xlabel(r'$\mathrm{log_{10}{(M*/M_{\odot})}}$', size = 13) #-np.log10(2.43)
 ax1.set_ylabel(r'$\mathrm{log_{10}{(R_{c}/kpc})}$', size = 13)
 plt.xticks(fontsize=12)
 plt.yticks(fontsize=12)
 plt.legend(prop={'size': 11}) #$\mathrm{R_{c}}$
-plt.title('95 passive VANDELS galaxies with 3D-HST half-light radii', size = 13)
+plt.title('95 passive VANDELS galaxies with 3D-HST half-light radii \n (1.0 < z < 1.6)', size = 13)
 ax1.set_xlim(9.75, 11.4)
 #plt.show()
-#plt.savefig('redshifts_R_c_log10M_onlyshen_no_norm_3DHST.pdf')
-plt.close()
+plt.savefig('SHENlocal+my_normalisation_fit_z_R_log10M_3DHST.pdf')
+#plt.close()
 
 stack_obs_above = []
 stack_obs_below=[]
@@ -300,8 +301,6 @@ cross = np.cross(size_mass, y_model2_x)
 #print(ind)
     #stack_obs_above.append(new_IDs[ind])
 
-
-
 col1 = fits.Column(name='ID', format='30A', array=new_IDs)
 col2 = fits.Column(name='redshifts', format='E', array=new_redshifts)
 col3 = fits.Column(name='age', format='E',  array=all_ages)
@@ -319,9 +318,9 @@ hdu = fits.BinTableHDU.from_columns([col1, col2, col3, col4, col5, col6])
 cat = Table.read("R_c_v_mass_passive_cat.fits").to_pandas()
 masses = cat['log10(M*)']
 
-mass_mask = (masses > 10.5) & (masses < 11)
+mass_mask = (masses > 10.5) & (masses < 11.)
 dataframe = pd.DataFrame(cat)
-mask = cross[mass_mask] > 0
+mask = cross[mass_mask] < 0
 cat_mask = pd.DataFrame(cat[mass_mask])
 circ_radii = cat_mask['R_c']
 print(len(circ_radii))
@@ -329,7 +328,7 @@ ind = cat[mass_mask].set_index(cat_mask['ID'].str.decode("utf-8").str.rstrip())
 
 index = np.log10(circ_radii)[mask].index.to_list()
 
-mask2 = cross[mass_mask] < 0
+mask2 = cross[mass_mask] > 0
 index2 = np.log10(circ_radii)[mask2].index.to_list()
 
 
@@ -354,13 +353,13 @@ stacking_above = stacks(stack_obs_above)
 new_wavs = np.arange(2400, 4200, 1.25)
 
 def plot_stackssingle(stack, name):
-    plt.figure(figsize=(15,7))
-    plt.plot(new_wavs, stack*10**18, color="black", lw=1.5 )
-    plt.xlabel("Wavelength ($\mathrm{\AA}$)", size=15)
-    plt.ylabel("Flux $(10^{-18}\ \mathrm{erg\ s^{-1}\ cm^{-2}\ \\AA{^-1})}$", size=15)
-    #plt.xlim(2300, 4250)
+    plt.figure(figsize=(20,8))
+    plt.plot(new_wavs, stack*10**18, color="black", lw=1.1 )
+    plt.xlabel("Wavelength ($\mathrm{\AA}$)", size=17)
+    plt.ylabel("Flux $(10^{-18}\ \mathrm{erg\ s^{-1}\ cm^{-2}\ \\AA{^-1})}$", size=17)
+    plt.xlim(2350, 4250)
     plt.ylim(0 ,2.0)
-    plt.title('median stacks '+ str(name) +' line \n (10.5 < log(M*) < 11.0)')# excluding possible AGN (CDFS + UDS)')
+    plt.title('median stacks '+ str(name) +' line \n (10.5 < log(M*) < 11.0)', size =18)# excluding possible AGN (CDFS + UDS)')
     plt.savefig('stacking_'+str(name)+'_relation.pdf')
     plt.close()
 
@@ -371,6 +370,21 @@ stacking_below = stacks(stack_obs_below)
 
 plot_stackssingle(stacking_below,'below')
 
+
+def plot_stacks(stack1, stack2):
+    plt.figure(figsize=(20,8))
+    plt.plot(new_wavs, stack2*10**18, color="k", lw=1.3, ls ='-', label = 'below relation (N = 28)')
+    plt.plot(new_wavs, stack1*10**18, color="r", lw=1.4, label = 'above relation (N = 32)')
+    plt.xlabel("Wavelength ($\mathrm{\AA}$)", size=17)
+    plt.ylabel("Flux $(10^{-18}\ \mathrm{erg\ s^{-1}\ cm^{-2}\ \\AA{^{-1}})}$", size=17)
+    plt.xlim(2350, 4240)
+    plt.ylim(0. ,1.75)
+    plt.legend(fontsize=14)
+    plt.title('Median stacks above and below normalised Shen et al. 2003 ETG relation', size = 18)# excluding possible AGN (CDFS + UDS)')
+    plt.savefig('stacks_abovebelow_shennorm.pdf')
+    plt.close()
+
+plot_stacks(stacking_above, stacking_below)
 #for ID in list_IDs:
     #new_re.append(ID_.loc[ID, 're'])
     #new_UV.append(IDs.loc[ID, 'UV_colour_50'])

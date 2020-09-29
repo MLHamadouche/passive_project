@@ -378,12 +378,6 @@ ax3.plot(wavs_stack, med_stack2*10**18, 'g',lw=0.8 )
 ax4.plot(wavs_stack, med_stack3*10**18, 'g',lw=0.8)
 ax5.plot(wavs_stack, med_stack4*10**18, 'g',lw=0.8)
 
-#ax2.tick_params(axis='x',          # changes apply to the x-axis
-#    which='both',      # both major and minor ticks are affected
-#      bottom='off',      # ticks along the bottom edge are off
-#        top='off',         # ticks along the top edge are off
-#    labelbottom='off'  # labels along the bottom edge are off)
-#   )
 ax5.set_xlabel('Wavelength ($\mathrm{\AA}$)', size=15)
 ax2.tick_params(axis = 'y', labelsize = 10, size=6)
 ax3.tick_params(axis = 'y', labelsize = 10, size=6)

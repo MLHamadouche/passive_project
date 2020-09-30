@@ -170,8 +170,6 @@ plt.close()
 
 #cross product for the above and below the lines
 
-
-
 def model(c):
 
     mod_vals = (0.56 * x_values1) + c
@@ -449,6 +447,57 @@ ID_above4 = []
 ID_below4 =[]
 ID_above = []
 ID_below =[]
+
+def plot_histo(bottom, top):
+    bins = [10.5,10.55,10.6,10.65,10.7]
+    bin1 = []
+    bin2 = []
+    bin3 = []
+    bin4 = []
+    bin5 = []
+    for g in points_above:
+        if (g[0]>bottom) & (g[0]<=top):
+            if (bottom<g[0]<=bottom+0.05):
+                bin1.append(g[1])
+            elif (bottom+0.05<g[0]<=bottom+0.1):
+                bin2.append(g[1])
+            elif (bottom+0.1<g[0]<=bottom+0.15):
+                bin3.append(g[1])
+            elif (bottom+0.15<g[0]<=bottom+0.2):
+                bin4.append(g[1])
+            else:
+                bin5.append(g[1])
+
+    plt.hist([bin1, bin2, bin3, bin4,bin5], 5)
+    plt.show()
+    bin6 = []
+    bin7 = []
+    bin8 = []
+    bin9 = []
+    bin10 = []
+    for f in points_below:
+        if (f[0]>bottom) & (f[0]<=top):
+            if (bottom<f[0]<=bottom+0.05):
+                bin6.append(f[1])
+            elif (bottom+0.05<f[0]<=bottom+0.1):
+                bin7.append(f[1])
+            elif (bottom+0.1<g[0]<=bottom+0.15):
+                bin8.append(f[1])
+            elif (bottom+0.15<f[0]<=bottom+0.2):
+                bin9.append(f[1])
+            else:
+                bin10.append(f[1])
+
+    plt.hist([bin6, bin7, bin8, bin9,bin10], 5)
+    plt.show()
+
+
+
+plot_histo(10.5,10.75)
+
+
+
+
 for i in points_above:
     if (i[0] > 9.7) and (i[0]<=12.0):
         #print(i)
@@ -549,31 +598,36 @@ below_flat1 = reduce(operator.concat, d)
 
 print(len(above_flat4))
 print(len(below_flat4))
-#if type(i) == i else i
-"""
-mass_mask0 = (masses > 11.00)
-print(sum(mass_mask0))
 
-mask0 = (cross_product < 0)
-print(sum(mask0))
+cat = Table.read("R_c_v_mass_passive_cat.fits").to_pandas()
+R_c_size = cat['R_c_size']
+masses = cat['log10(M*/Msun)']
 
-cat_mask0 = pd.DataFrame(cat[mass_mask0])
+cross_product = (x_values1*np.log10(R_c_size)) - (y_model2*masses)
+print(cross_product)
+#cross_product = np.cross(np.array(size_mass), np.array(y_model2_x))
+mass_mask0 = (masses > 9.5) & (masses < 12.00)
+
+
+mask0 = (cross_product > 0)
+print(mask0)
+cat_mask0 = pd.DataFrame(cat)[mass_mask0]
 circ_radii0 = cat_mask0['R_c_size']
 print('lencircradii', len(circ_radii0))
-ind0 = cat[mass_mask0].set_index(cat_mask0['IDs'].str.decode("utf-8").str.rstrip())
+#ind0 = cat[mass_mask0].set_index(cat_mask0[mass_mask0]['IDs'].str.decode("utf-8").str.rstrip())
 
-index0 = np.log10(circ_radii0[mask0]).index.to_list()
+index0 = np.log10(circ_radii0)[mask0].index.to_list()
 
-mask20 = (cross_product > 0)
-index20 = np.log10(circ_radii0[mask20][mass_mask0]).index.to_list()
+mask20 = (cross_product < 0)
+index20 = np.log10(circ_radii0)[mask20].index.to_list()
 
 #print(len(cat_mask))
 for i0 in index0:
-    stack_obs_above.append(cat_mask0['IDs'].str.decode("utf-8").str.rstrip()[i0])
+    stack_obs_above.append(cat_mask0[mask0]['IDs'].str.decode("utf-8").str.rstrip()[i0])
 print(stack_obs_above)
 
 for id0 in index20:
-    stack_obs_below.append(cat_mask0['IDs'].str.decode("utf-8").str.rstrip()[id0])
+    stack_obs_below.append(cat_mask0[mask20]['IDs'].str.decode("utf-8").str.rstrip()[id0])
 print(stack_obs_below)
 
 len_below = len(stack_obs_below)
@@ -588,9 +642,8 @@ print(len_below, len_above)
 
 input()
 
-"""
 
-stacking_above = stacks(above_flat)
+stacking_above = stacks(stack_obs_above)
 new_wavs = np.arange(2400, 4200, 1.25)
 
 def plot_stackssingle(stack, name, color):
@@ -600,39 +653,62 @@ def plot_stackssingle(stack, name, color):
     plt.ylabel("Flux $(10^{-18}\ \mathrm{erg\ s^{-1}\ cm^{-2}\ \\AA{^-1})}$", size=17)
     plt.xlim(2350, 4250)
     #plt.ylim(0 ,2.0)
-    plt.title('median stacks '+ str(name) +' line \n 9.7 < (log(M*) <= 12.0)', size =18)# excluding possible AGN (CDFS + UDS)')
-    plt.savefig('stacking_'+str(name)+'_relation_aboveall.pdf')
+    plt.title('median stacks '+ str(name) +' line \n 10.75 < (log(M*) <= 11.0)', size =18)# excluding possible AGN (CDFS + UDS)')
+    plt.savefig('stacking_'+str(name)+'_relation_ALL_TEST.pdf')
     plt.close()
     #plt.show()
 
 plot_stackssingle(stacking_above, 'above', 'r')
 
 
-stacking_below = stacks(below_flat)
+stacking_below = stacks(stack_obs_below)
 
 plot_stackssingle(stacking_below,'below', 'k')
 
 
 def plot_stacks(stack1, stack2):
     plt.figure(figsize=(20,8))
-    plt.plot(new_wavs, stack1*10**18, color="r", lw=1.3, ls ='-', label = f'above relation (N = {len(ID_above)})')
-    plt.plot(new_wavs, stack2*10**18, color="k", lw=1.4, label = f'below relation (N = {len(ID_below)})')
+    plt.plot(new_wavs, stack1*10**18, color="r", lw=1.3, ls ='-', label = f'above relation (N = {len(stack_obs_above)})')
+    plt.plot(new_wavs, stack2*10**18, color="k", lw=1.4, label = f'below relation (N = {len(stack_obs_below)})')
     plt.xlabel("Wavelength ($\mathrm{\AA}$)", size=17)
     plt.ylabel("Flux $(10^{-18}\ \mathrm{erg\ s^{-1}\ cm^{-2}\ \\AA{^{-1}})}$", size=17)
     plt.xlim(2350, 4240)
     #plt.ylim(0. ,1.75)
     plt.legend(fontsize=14)
     plt.title('Median stacks above and below normalised Shen et al. 2003 ETG relation', size = 18)# excluding possible AGN (CDFS + UDS)')
-    plt.savefig('stacks_abovebelow_shennorm_aboveall.pdf')
+    plt.savefig('stacks_abovebelow_shennorm_ALL_TEST.pdf')
     plt.close()
     #plt.show()
 
 plot_stacks(stacking_above, stacking_below)
 
+fig1, ax1 = plt.subplots(figsize=[12,8.5])
 
+#im1 = ax1.scatter(np.array(all_masses), np.log10(R_c_size), s=50, c=new_redshifts, cmap=plt.cm.magma, marker='o', edgecolors='black',  linewidth=0.5 )
+#cbar = fig1.colorbar(im1, ax=ax1)
+#cbar.set_label(r'$\mathrm{log_{10}(sSFR/yr)}$')
+#cbar.set_label(r'Redshift, z', size=12)
+plt.scatter(np.array(all_masses)[mask0], np.log10(R_c_size)[mask0], marker='o', s=20, c='r', edgecolors='k')
+plt.scatter(np.array(all_masses)[mask20], np.log10(R_c_size)[mask20], marker='o', s=20, c='g', edgecolors='k')
+ax1.plot(x_values1, y_model2, linewidth=2, color='r', label=f'Best fit Shen et al. normalised by f = {round(np.mean(10**(shen - y_model2)),2)}')
+ax1.plot(x_values1, y_model2+np.std(y_model2), linewidth=1., color='r', ls = ':')#label='Best fit Shen et al. normalised by $\mathrm{f_{g} = 1.82}$')
+ax1.plot(x_values1, y_model2-np.std(y_model2), linewidth=1., color='r', ls = ':')#label='Best fit Shen et al. normalised by $\mathrm{f_{g} = 1.82}$')
+ax1.set_xlabel(r'$\mathrm{log_{10}{(M*/M_{\odot})}}$', size = 13) #-np.log10(2.43)
+ax1.set_ylabel(r'$\mathrm{log_{10}{(R_{c}/kpc})}$', size = 13)
+plt.xticks(fontsize=12)
+plt.yticks(fontsize=12)
+equation = 'y = ' + str(0.56) + 'x' ' + ' + str(round(best_c,2))
+at = AnchoredText(equation, frameon=True,
+                  loc='upper right', prop=dict(size=8))
 
-#def plot_histo():
-
+at.patch.set_boxstyle("round,pad=0.,rounding_size=0.1")
+ax1.add_artist(at)
+plt.legend(prop={'size': 11}) #$\mathrm{R_{c}}$
+plt.title('95 passive VANDELS galaxies with 3D-HST half-light radii \n (1.0 < z < 1.6)', size = 13)
+#ax1.set_xlim(9.75, 11.4)
+plt.grid()
+plt.savefig('SHENlocal+my_normalisation_fit_z_R_log10M_3DHST_CROSS.pdf')
+plt.close()
 
 
 """

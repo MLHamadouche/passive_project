@@ -148,27 +148,31 @@ y_model = 0.56*x + (best_c)
 diff_shen_me = abs(y_model[0]) - abs(shen[0])
 print(10**diff_shen_me)
 
-
-plt.plot(x, shen, 'k', lw = 0.7, label= 'Shen et al. local ETG relation')
-plt.plot(x, y_model, 'r', lw = 0.7, label=f'local ETG relation normalised by f = {round(10**diff_shen_me,2)}')
-plt.scatter(masses, np.log10(Rc), marker='o', s=20, c='r', edgecolors='k')
-plt.xlabel(r'$\mathrm{log_{10}{(M*/M_{\odot})}}$', size = 8)
-plt.ylabel(r'$\mathrm{log_{10}{(R_{c})}}$', size = 8)
+fig1, ax1 = plt.subplots(figsize=[12,8.5])
+im1 = ax1.scatter(masses, np.log10(Rc), s=50, c=new_redshifts, cmap=plt.cm.magma, marker='o', edgecolors='black',  linewidth=0.5 )
+cbar = fig1.colorbar(im1, ax=ax1)
+#cbar.set_label(r'$\mathrm{log_{10}(sSFR/yr)}$')
+cbar.set_label(r'Redshift, z', size=12)
+ax1.plot(x, shen, 'k', lw = 0.7, label= 'Shen et al. local ETG relation')
+ax1.plot(x, y_model, 'r', lw = 0.7, label=f'local ETG relation normalised by f = {round(10**diff_shen_me,2)}')
+#ax1.scatter(masses, np.log10(Rc), marker='o', s=20, c='r', edgecolors='k')
+ax1.set_xlabel(r'$\mathrm{log_{10}{(M*/M_{\odot})}}$', size = 8)
+ax1.set_ylabel(r'$\mathrm{log_{10}{(R_{c})}}$', size = 8)
 plt.xticks(fontsize=6)
 plt.yticks(fontsize=6)
 plt.legend(prop={'size': 7})
 plt.title('3D-HST log10(Rc) versus log10(M*/Msun)', size = 8)
 plt.xlim(9.75, 11.5)
 #plt.show()
-plt.savefig('TEST_NEW_SHEN_ME.pdf')
-
+#plt.savefig('TEST_NEW_SHEN_ME.pdf')
+plt.close()
 cat = Table.read('TEST_CAT.fits').to_pandas()
 df = pd.DataFrame(cat)
 R_c = df["R_c_size"]
-print(np.log10(R_c))
-print(y_model)
+#print(np.log10(R_c))
+#print(y_model)
 index = np.log10(R_c).index.to_list()
-print(index)
+#print(index)
 IDs = cat['IDs']
 IDs_above = []
 IDs_below = []
@@ -183,7 +187,7 @@ index_masked2 = np.log10(R_c)[mask1].index.to_list()
 #print(size.shape)
 #print('size_mask1:',size[mask1])
 #print(len(size[mask1]))
-print('rcmask =',R_c[mask])
+
 print(index_masked)
 IDs_above = IDs[index_masked].str.decode("utf-8").str.rstrip().values
 IDs_below= IDs[index_masked2].str.decode("utf-8").str.rstrip().values
@@ -196,16 +200,16 @@ IDs_below= IDs[index_masked2].str.decode("utf-8").str.rstrip().values
 print(len(IDs_above), len(IDs_below))
 
 
-#stacking_above = stacks(IDs_above)
+stacking_above = stacks(IDs_above)
 new_wavs = np.arange(2400, 4200, 1.25)
 
 def plot_stackssingle(stack, name, color):
     plt.figure(figsize=(20,8))
-    plt.plot(new_wavs, stack*10**18, color=color, lw=1.1 )
+    plt.plot(new_wavs, stack*10**18, color=color, lw=1.5 )
     plt.xlabel("Wavelength ($\mathrm{\AA}$)", size=17)
     plt.ylabel("Flux $(10^{-18}\ \mathrm{erg\ s^{-1}\ cm^{-2}\ \\AA{^-1})}$", size=17)
     plt.xlim(2350, 4250)
-    #plt.ylim(0 ,2.0)
+    plt.ylim(0 ,1.75)
     plt.title('median stacks '+ str(name) +' line \n 9.7 < (log(M*) <= 11.4)', size =18)# excluding possible AGN (CDFS + UDS)')
     plt.savefig('stacking_'+str(name)+'_relation_ALL_TEST.pdf')
     plt.close()
@@ -214,19 +218,19 @@ def plot_stackssingle(stack, name, color):
 #plot_stackssingle(stacking_above, 'above', 'r')
 
 
-#stacking_below = stacks(IDs_below)
+stacking_below = stacks(IDs_below)
 
 #plot_stackssingle(stacking_below,'below', 'k')
 
 
 def plot_stacks(stack1, stack2):
     plt.figure(figsize=(20,8))
-    plt.plot(new_wavs, stack2*10**18, color="k", lw=1.4, label = f'below relation (N = {len(IDs_below)})')
-    plt.plot(new_wavs, stack1*10**18, color="r", lw=1.3, ls ='-', label = f'above relation (N = {len(IDs_above)})')
+    plt.plot(new_wavs, stack2*10**18, color="k", lw=1.5, label = f'below relation (N = {len(IDs_below)})')
+    plt.plot(new_wavs, stack1*10**18, color="r", lw=1.5, ls ='-', label = f'above relation (N = {len(IDs_above)})')
     plt.xlabel("Wavelength ($\mathrm{\AA}$)", size=17)
     plt.ylabel("Flux $(10^{-18}\ \mathrm{erg\ s^{-1}\ cm^{-2}\ \\AA{^{-1}})}$", size=17)
     plt.xlim(2350, 4240)
-    #plt.ylim(0. ,1.75)
+    plt.ylim(0. ,1.75)
     plt.legend(fontsize=14)
     plt.title('Median stacks above and below normalised Shen et al. 2003 ETG relation', size = 18)# excluding possible AGN (CDFS + UDS)')
     plt.savefig('stacks_abovebelow_shennorm_ALL_TEST.pdf')
@@ -234,7 +238,7 @@ def plot_stacks(stack1, stack2):
     #plt.show()
 
 #plot_stacks(stacking_above, stacking_below)
-
+#input()
 """
 
 if np.greater(size,np.array(0.56*x + np.ones(95)*(best_c)))==True:
@@ -247,19 +251,30 @@ if np.less(size,np.array(0.56*x + np.ones(95)*(best_c)))==True:
 """
 #print(f'IDs_above {IDs_above}')
 #print(f'IDs_below {IDs_below}')
-
-mass_mask = (masses>10.5) & (masses <= 11.0)
+low_lim = 10.75
+upp_lim = 11.0
+mass_mask = (masses>low_lim) & (masses <= upp_lim)
 cat1 = Table.read('TEST_CAT.fits').to_pandas()
 df0 = pd.DataFrame(cat1[mass_mask])
+print(df0)
+
+#input()
+
 R_c = df0["R_c_size"]
 mass_ = df['log10(M*/Msun)']
-size = np.array(np.log10(R_c))
+size = np.log10(R_c)
 y_model = np.array(y_model)
-x_mask = (x>10.5)&(x<=11)
-mask = (size>y_model[mass_mask])
-mask1 = (size<y_model[mass_mask])
-print(np.log10(R_c))
+#x_mask = (x>10.5)&(x<=10.75)
+x_array= np.linspace(low_lim, upp_lim, len(size))
+y_model  = 0.56*x_array+(best_c)
+
+mask = (size>y_model)
+
+#input()
+mask1 = (size<y_model)
+
 #print(IDs_above[mass_mask])
+
 
 
 index_masked_mass= np.log10(R_c)[mask].index.to_list()
@@ -268,12 +283,14 @@ index_masked2_mass = np.log10(R_c)[mask1].index.to_list()
 #print('size_mask1:',size[mask1])
 #print(len(size[mask1]))
 
-IDs_above_105_75 = IDs[index_masked_mass].str.decode("utf-8").str.rstrip().values
-IDs_below_105_75= IDs[index_masked2_mass].str.decode("utf-8").str.rstrip().values
+IDs_above_1075_11 = IDs[index_masked_mass].str.decode("utf-8").str.rstrip().values
+IDs_below_1075_11= IDs[index_masked2_mass].str.decode("utf-8").str.rstrip().values
 #point = x0,y0
+print(IDs_above_1075_11)
+print(IDs_below_1075_11)
 
 #if y0 > 0.56*x0 + best_c:
-stacking_above_105_75 = stacks(IDs_above_105_75)
+stacking_above_1075_11 = stacks(IDs_above_1075_11)
 new_wavs = np.arange(2400, 4200, 1.25)
 
 def plot_stackssingle(stack, name, color):
@@ -283,34 +300,34 @@ def plot_stackssingle(stack, name, color):
     plt.ylabel("Flux $(10^{-18}\ \mathrm{erg\ s^{-1}\ cm^{-2}\ \\AA{^-1})}$", size=17)
     plt.xlim(2350, 4250)
     #plt.ylim(0 ,2.0)
-    plt.title('median stacks '+ str(name) +' line \n (10.5 < (log(M*) <= 10.75)', size =18)# excluding possible AGN (CDFS + UDS)')
-    plt.savefig('stacking_'+str(name)+'_relation_105_75_TEST.pdf')
+    plt.title('median stacks '+ str(name) +f' line \n ({low_lim} < (log(M*) <= {upp_lim})', size =18)# excluding possible AGN (CDFS + UDS)')
+    plt.savefig('stacking_'+str(name)+'_relation_'+str(low_lim)+'_'+str(upp_lim)+'_TEST.pdf')
     plt.close()
     #plt.show()
 
-plot_stackssingle(stacking_above_105_75, 'above', 'r')
+plot_stackssingle(stacking_above_1075_11, 'above', 'r')
 
 
-stacking_below_105_75 = stacks(IDs_below_105_75)
+stacking_below_1075_11 = stacks(IDs_below_1075_11)
 
-plot_stackssingle(stacking_below_105_75,'below', 'k')
+plot_stackssingle(stacking_below_1075_11,'below', 'k')
 
 
 def plot_stacks(stack1, stack2):
     plt.figure(figsize=(20,8))
-    plt.plot(new_wavs, stack2*10**18, color="k", lw=1.5, label = f'below relation (N = {len(IDs_below_105_75)})')
-    plt.plot(new_wavs, stack1*10**18, color="r", lw=1.5, ls ='-', label = f'above relation (N = {len(IDs_above_105_75)})')
+    plt.plot(new_wavs, stack2*10**18, color="k", lw=1.5, label = f'below relation (N = {len(IDs_below_1075_11)})')
+    plt.plot(new_wavs, stack1*10**18, color="r", lw=1.5, ls ='-', label = f'above relation (N = {len(IDs_above_1075_11)})')
     plt.xlabel("Wavelength ($\mathrm{\AA}$)", size=17)
     plt.ylabel("Flux $(10^{-18}\ \mathrm{erg\ s^{-1}\ cm^{-2}\ \\AA{^{-1}})}$", size=17)
     plt.xlim(2350, 4240)
     #plt.ylim(0. ,1.75)
     plt.legend(fontsize=14)
-    plt.title('Median stacks above and below normalised Shen et al. 2003 ETG relation \n (10.5 < (log(M*) <= 10.75)', size = 18)# excluding possible AGN (CDFS + UDS)')
-    plt.savefig('stacks_abovebelow_shennorm_105_75_TEST.pdf')
+    plt.title(f'Median stacks above and below normalised Shen et al. 2003 ETG relation \n ({low_lim} < (log(M*) <= {upp_lim})', size = 18)# excluding possible AGN (CDFS + UDS)')
+    plt.savefig('stacks_abovebelow_shennorm_'+str(low_lim)+'_'+str(upp_lim)+'_TEST.pdf')
     plt.close()
     #plt.show()
 
-plot_stacks(stacking_above_105_75, stacking_below_105_75)
+plot_stacks(stacking_above_1075_11, stacking_below_1075_11)
 
 
 

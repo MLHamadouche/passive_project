@@ -147,25 +147,32 @@ y_model = 0.56*x + (best_c)
 #print(y_model - shen)
 diff_shen_me = abs(y_model[0]) - abs(shen[0])
 print(10**diff_shen_me)
+alpha = 0.76
+log_A = 0.22
+log_Reff = log_A + alpha*np.log10(10**x/(5*10**10))
 
 fig1, ax1 = plt.subplots(figsize=[12,8.5])
-im1 = ax1.scatter(masses, np.log10(Rc), s=50, c=new_redshifts, cmap=plt.cm.magma, marker='o', edgecolors='black',  linewidth=0.5 )
+im1 = ax1.scatter(masses, np.log10(Re_kpc/u.kpc), s=130, c=new_redshifts, cmap=plt.cm.magma, marker='o', edgecolors='black',linewidth=0.5 )
 cbar = fig1.colorbar(im1, ax=ax1)
 #cbar.set_label(r'$\mathrm{log_{10}(sSFR/yr)}$')
-cbar.set_label(r'Redshift, z', size=12)
-ax1.plot(x, shen, 'k', lw = 0.7, label= 'Shen et al. local ETG relation')
-ax1.plot(x, y_model, 'r', lw = 0.7, label=f'local ETG relation normalised by f = {round(10**diff_shen_me,2)}')
+cbar.set_label(r'Redshift (z)', size=12)
+#ax1.plot(x, shen, 'k', lw = 0.7, label= 'Shen et al. local ETG relation')
+ax1.plot(x, y_model, 'k', lw = 1.2, label=f'local ETG relation normalised by f = {round(10**diff_shen_me,2)}')
+ax1.plot(x, log_Reff, 'r' ,lw = 1.2, label= 'A. van der Wel z = 1.25 ETG relation')
 #ax1.scatter(masses, np.log10(Rc), marker='o', s=20, c='r', edgecolors='k')
-ax1.set_xlabel(r'$\mathrm{log_{10}{(M*/M_{\odot})}}$', size = 8)
-ax1.set_ylabel(r'$\mathrm{log_{10}{(R_{c})}}$', size = 8)
-plt.xticks(fontsize=6)
-plt.yticks(fontsize=6)
-plt.legend(prop={'size': 7})
-plt.title('3D-HST log10(Rc) versus log10(M*/Msun)', size = 8)
-plt.xlim(9.75, 11.5)
+ax1.set_xlabel(r'$\mathrm{log_{10}{(M*/M_{\odot})}}$', size = 12)
+ax1.set_ylabel(r'$\mathrm{log_{10}{(R_{e}/kpc)}}$', size = 12)
+plt.xticks(fontsize=10)
+plt.yticks(fontsize=10)
+plt.legend(prop={'size': 10})
+plt.title('3D-HST log10(Re) versus log10(M*/Msun)', size = 13)
+plt.xlim(9.75, 11.4)
 #plt.show()
-#plt.savefig('TEST_NEW_SHEN_ME.pdf')
+plt.savefig('Re_v_M*_test_with_Arjens_relation.pdf')
 plt.close()
+
+input()
+
 cat = Table.read('TEST_CAT.fits').to_pandas()
 df = pd.DataFrame(cat)
 R_c = df["R_c_size"]
@@ -188,7 +195,7 @@ index_masked2 = np.log10(R_c)[mask1].index.to_list()
 #print('size_mask1:',size[mask1])
 #print(len(size[mask1]))
 
-print(index_masked)
+#print(index_masked)
 IDs_above = IDs[index_masked].str.decode("utf-8").str.rstrip().values
 IDs_below= IDs[index_masked2].str.decode("utf-8").str.rstrip().values
 #print((0.56*x + (best_c)).shape)
@@ -197,11 +204,11 @@ IDs_below= IDs[index_masked2].str.decode("utf-8").str.rstrip().values
 
 #    IDs_above.append(df.loc[(np.log10(R_c)[mask]==i),'IDs'].values.tolist())
 
-print(len(IDs_above), len(IDs_below))
+#print(len(IDs_above), len(IDs_below))
 
 
 stacking_above = stacks(IDs_above)
-new_wavs = np.arange(2400, 4200, 1.25)
+#new_wavs = np.arange(2400, 4200, 1.25)
 
 def plot_stackssingle(stack, name, color):
     plt.figure(figsize=(20,8))
@@ -219,9 +226,24 @@ def plot_stackssingle(stack, name, color):
 
 
 stacking_below = stacks(IDs_below)
+from indices import C29_33, Dn4000, Mg_UV
 
+c_ind = C29_33(stacking_below)
+print(f'C(29-33) index below: {c_ind}')
+c_ind = C29_33(stacking_above)
+print(f'C(29-33) index above : {c_ind}')
+dn4000 = Dn4000(stacking_above)
+print(f'Dn4000 index above: {dn4000}')
+dn4000 = Dn4000(stacking_below)
+print(f'Dn4000 index below: {dn4000}')
+
+Mg_UV_index = Mg_UV(stacking_below)
+print(f'Mg_UV index below: {Mg_UV_index}')
 #plot_stackssingle(stacking_below,'below', 'k')
+Mg_UV_index = Mg_UV(stacking_above)
+print(f'Mg_UV index above: {Mg_UV_index}')
 
+input()
 
 def plot_stacks(stack1, stack2):
     plt.figure(figsize=(20,8))
@@ -251,12 +273,12 @@ if np.less(size,np.array(0.56*x + np.ones(95)*(best_c)))==True:
 """
 #print(f'IDs_above {IDs_above}')
 #print(f'IDs_below {IDs_below}')
-low_lim = 10.75
-upp_lim = 11.0
+low_lim = 10.25
+upp_lim = 10.5
 mass_mask = (masses>low_lim) & (masses <= upp_lim)
 cat1 = Table.read('TEST_CAT.fits').to_pandas()
 df0 = pd.DataFrame(cat1[mass_mask])
-print(df0)
+#print(df0)
 
 #input()
 
@@ -286,8 +308,8 @@ index_masked2_mass = np.log10(R_c)[mask1].index.to_list()
 IDs_above_1075_11 = IDs[index_masked_mass].str.decode("utf-8").str.rstrip().values
 IDs_below_1075_11= IDs[index_masked2_mass].str.decode("utf-8").str.rstrip().values
 #point = x0,y0
-print(IDs_above_1075_11)
-print(IDs_below_1075_11)
+#print(IDs_above_1075_11)
+#print(IDs_below_1075_11)
 
 #if y0 > 0.56*x0 + best_c:
 stacking_above_1075_11 = stacks(IDs_above_1075_11)
@@ -305,12 +327,13 @@ def plot_stackssingle(stack, name, color):
     plt.close()
     #plt.show()
 
-plot_stackssingle(stacking_above_1075_11, 'above', 'r')
+#plot_stackssingle(stacking_above_1075_11, 'above', 'r')
+
 
 
 stacking_below_1075_11 = stacks(IDs_below_1075_11)
 
-plot_stackssingle(stacking_below_1075_11,'below', 'k')
+#plot_stackssingle(stacking_below_1075_11,'below', 'k')
 
 
 def plot_stacks(stack1, stack2):
@@ -327,8 +350,17 @@ def plot_stacks(stack1, stack2):
     plt.close()
     #plt.show()
 
-plot_stacks(stacking_above_1075_11, stacking_below_1075_11)
+#plot_stacks(stacking_above_1075_11, stacking_below_1075_11)
 
+
+c_ind = C29_33(stacking_below_1075_11)
+print(f'C(29-33) index below: {c_ind}')
+c_ind = C29_33(stacking_above_1075_11)
+print(f'C(29-33) index above : {c_ind}')
+dn4000 = Dn4000(stacking_above_1075_11)
+print(f'Dn4000 index above: {dn4000}')
+dn4000 = Dn4000(stacking_below_1075_11)
+print(f'Dn4000 index below: {dn4000}')
 
 
 #𝑦0>𝑎𝑥0+𝑏 then the point is above the line, etc.

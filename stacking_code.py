@@ -4,6 +4,7 @@ from astropy.table import Table
 from astropy.io import fits
 import spectres
 import LoadData as ld
+import matplotlib.pyplot as plt
 
 """
 Outside of the function, define the pandas list of IDs that is needed to index the redshifts on line 49 (after for loop).
@@ -60,7 +61,10 @@ def stacks(objects_list): #input array of redshifts for given list of objects
         flux = spectrum[:,1][wav_mask]
         flux_errs = spectrum[:,2][wav_mask]
         wavs = spectrum[:,0][wav_mask]
-
+        #plt.plot(wavs, flux)
+        #plt.ylim(-2*10**-18, 2*10**-18)
+        #plt.savefig(str(ID)+'.pdf')
+        #plt.close()
         zeros_mask = (flux == 0.)|(flux_errs == 0.)
         flux[zeros_mask] = np.nan
         flux_errs[zeros_mask] = np.nan

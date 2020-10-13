@@ -37,13 +37,23 @@ def C29_33(fluxes):
     return C_ind
 
 
-def H_delta():
-    #from Brolagh.M, 1999
-    mask_blue = (wavs >4030 )& (wavs <4082) #blue continuum
-    mask_red = (wavs > 4122)& (wavs<4170) #red continuum
-    line = (wavs>4082) & (wavs< 4122)
-    return H_delt_ind #negative if emission, postive if absorption
+def H_delta(fluxes):
+    #from Bolagh.M, 1999
+    #changed to make either side 40Angstroms so no weighting change needed
+    mask_blue = (wavs > 4042)& (wavs<4082) #blue continuum
 
+    flux_blue = fluxes[mask_blue]
+    mask_red = (wavs > 4122) & (wavs<4162) #red continuum
+    flux_red = fluxes[mask_red]
+    #flux_red = fluxes[mask_red]
+    line = (wavs>4082) & (wavs< 4122)
+    flux_line = fluxes[line]
+    flux_continuum = (flux_blue+flux_red)
+    H_delta_EW = np.trapz((flux_continuum - flux_line)/flux_continuum), x = wavs[line])
+
+    # EW found by summing fluxes in region, and fitting with gaussian
+
+    return H_delta_EW #negative if emission, postive if absorption
 #mask_2825 = (wavs > 2725) & (wavs < 2825)
 #print(wavs[mask_2825])
 

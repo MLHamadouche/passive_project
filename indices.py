@@ -8,7 +8,7 @@ import LoadData as ld
 wavs = np.arange(2400, 4200, 1.25)
 
 def Dn4000(fluxes):
-
+    #n is for narrow - less sensitive to reddening effects, used more in literature - 4000A to 4100A instead of 4050 - 4250
     #indices for Dn4000 for rest frame wavelenghts of spectra
     #measure the strength of the 4000A break (Dn4000)
     mask_3850 = (wavs <= 3950) & (wavs >= 3850) #blue continuum
@@ -17,18 +17,20 @@ def Dn4000(fluxes):
     mask_4000 = (wavs >= 4000) & (wavs <= 4100) #red continuum
     flux_4000 = np.nanmean(fluxes[mask_4000])
     #print(flux_4000)
-    D4000_index = flux_4000/flux_3850
+    Dn4000_index = flux_4000/flux_3850
 
 
-    return D4000_index
+    return Dn4000_index
 
 
 def C29_33(fluxes):
+    c = 3*10**8
+    F_nu = fluxes*(wavs**2)/c
     #indices for the C(29-33) line for rest frame wavelenghts of spectra
     mask_2900 = (wavs <= 3100) & (wavs >= 2700)
-    flux_2900 = np.nanmean(fluxes[mask_2900])
+    flux_2900 = np.nanmean(F_nu[mask_2900])
     mask_3300 = (wavs <= 3500) & (wavs >= 3100)
-    flux_3300 = np.nanmean(fluxes[mask_3300])
+    flux_3300 = np.nanmean(F_nu[mask_3300])
 
     flux_ratio = flux_2900/flux_3300
     C_ind = -2.5*np.log10(flux_ratio)
@@ -49,7 +51,7 @@ def H_delta(fluxes):
     line = (wavs>4082) & (wavs< 4122)
     flux_line = fluxes[line]
     flux_continuum = (flux_blue+flux_red)
-    H_delta_EW = np.trapz((flux_continuum - flux_line)/flux_continuum), x = wavs[line])
+    H_delta_EW = np.trapz((flux_continuum - flux_line)/flux_continuum, x = wavs[line])
 
     # EW found by summing fluxes in region, and fitting with gaussian
 

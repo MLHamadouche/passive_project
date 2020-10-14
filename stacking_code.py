@@ -100,14 +100,17 @@ def stacks(objects_list): #input array of redshifts for given list of objects
     #colour_index.append(C29_33(spec))
     #D4000_index.append(Dn4000(spec))
     #Mg_UV_index.append(Mg_UV(spec))
+    plt.rc('font', family='serif')
+    plt.rc('xtick', labelsize='x-small')
+    plt.rc('ytick', labelsize='x-small')
     fig1, ax1 = plt.subplots(figsize=[12,8.5])
     im1 = ax1.scatter(colour_index, Mg_UV_index, s=130, c=all_masses, cmap=plt.cm.magma, marker='o', edgecolors='black',linewidth=0.5 )
     cbar = fig1.colorbar(im1, ax=ax1)
     cbar.set_label(r'Redshift (z)', size=12)
     #ax1.scatter(colour_index, Mg_UV_index)
-    ax1.set_xlabel("C(29-33)", size=17)
-    ax1.set_ylabel("Mg_UV index", size=17)
-    plt.title('colour index versus Mg_UV index', size =18)# excluding possible AGN (CDFS + UDS)')
+    ax1.set_xlabel("C(29-33)", size=13)
+    ax1.set_ylabel("MgUV index", size=13)
+    plt.title('Colour index versus MgUV index', size =14)# excluding possible AGN (CDFS + UDS)')
     plt.savefig('C_2933vMgUV_allobjects_Mcbar.pdf')
     plt.close()
 
@@ -122,7 +125,7 @@ def stacks(objects_list): #input array of redshifts for given list of objects
         #standev_err[m] = np.std(spec_, axis=0)
         median_spec[m]=np.nanmedian(spec_)
 
-    #med_spec_units = median_spec*med_new #test removing normalisations to see fluxes
+    #med_spec_units = median_spec*med_new #test removing normalisations to see fluxes nh
 
     return median_spec #returns an array of the new median stacked fluxes
 

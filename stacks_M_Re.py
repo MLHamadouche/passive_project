@@ -271,7 +271,7 @@ plt.close()
 new_wavs = np.arange(2400, 4200, 1.25)
 stacking_all = stacks(all_IDs)
 #stacking_above = stacks(IDs_above)
-input()
+
 
 def plot_stackssingle(stack, name, color):
     plt.figure(figsize=(20,8))
@@ -284,12 +284,12 @@ def plot_stackssingle(stack, name, color):
     plt.savefig('stacking_'+str(name)+'_vdw_relation_ALL_TEST.pdf')
     plt.close()
     #plt.show()
-
+input()
 #plot_stackssingle(stacking_above, 'above', 'r')
 
 #stacking_below = stacks(IDs_below)
 from indices import C29_33, Dn4000, Mg_UV, H_delta
-
+"""
 c_ind = C29_33(stacking_below)
 print(f'C(29-33) index below: {c_ind}')
 c_ind = C29_33(stacking_above)
@@ -310,7 +310,7 @@ print(f'Mg_UV index above: {Mg_UV_index}')
 
 #H_delta_EW = H_delta(stacking_below)
 #print(f'H_delta_EW above: {H_delta_EW}')
-
+"""
 
 
 def plot_stacks(stack1, stack2):
@@ -328,7 +328,7 @@ def plot_stacks(stack1, stack2):
     plt.close()
     #plt.show()
 
-plot_stacks(stacking_above, stacking_below)
+#plot_stacks(stacking_above, stacking_below)
 
 """
 
@@ -342,8 +342,8 @@ if np.less(size,np.array(0.56*x + np.ones(95)*(best_c)))==True:
 """
 #print(f'IDs_above {IDs_above}')
 #print(f'IDs_below {IDs_below}')
-low_lim = 10.0
-upp_lim = 10.5
+low_lim = 10.4
+upp_lim = 11.3
 mass_mask = (masses>low_lim) & (masses <= upp_lim)
 cat1 = Table.read("Re_cat.fits").to_pandas()
 
@@ -430,7 +430,7 @@ def plot_stacks(stack1, stack2):
 
 plot_stacks(stacking_above_1075_11, stacking_below_1075_11)
 
-
+"""
 c_ind = C29_33(stacking_below_1075_11)
 print(f'C(29-33) index below: {c_ind}')
 c_ind = C29_33(stacking_above_1075_11)
@@ -452,3 +452,37 @@ print(f'H_delta_EW above: {H_delta_EW}')
 
 H_delta_EW = H_delta(stacking_below)
 print(f'H_delta_EW above: {H_delta_EW}')
+"""
+mask = (masses>10.4)
+df2 = pd.DataFrame(cat1[mask])
+R_e = df2['Re_kpc']
+sigma_50 = (10**masses[mask])/(2*(R_e)**2)
+redshifts = df2['redshifts']
+mass_ = df2['log10(M*/Msun)']
+#redshift = df0['redshifts']
+#redshift = np.array(redshift[(mass_>10.4)])
+print(len(redshifts))
+#print(sigma_50)
+
+fig1, ax1 = plt.subplots(figsize=[12,8.5])
+im1 = ax1.scatter(mass_, np.log10(sigma_50), s=130, c=redshifts, cmap=plt.cm.magma, marker='o', edgecolors='black',linewidth=0.5 )
+#cbar = fig1.colorbar(im1, ax=ax1)
+#cbar.set_label(r'Redshift (z)', size=12)
+ax1.set_xlabel(r'$\mathrm{log_{10}{(M*/M_{\odot})}}$', size = 12)
+ax1.set_ylabel(r'$\mathrm{log_{10}{(\sigma_{50}/M_{\odot} kpc^{-2})}}$', size = 12)
+plt.xticks(fontsize=10)
+#plt.yscale('log')
+#plt.xscale('log')
+plt.yticks(fontsize=10)
+plt.title('Mass surface density versus log stellar mass', size = 13)
+plt.savefig('sigma_50_v_mass_(masscomp).pdf')
+plt.close()
+
+
+### histogram for mass complete (ish) sample log10(M*) > 10.4
+print(np.max(masses))
+fig, ax = plt.subplots(figsize = [12,8.5])
+bins = np.linspace(10.4, 11.3, 21)
+#bins = [10.4, 10.45, 10.5, 10.55,10.6, 10.65, 10.7, 10.75, 10.8, 10.85, 10.9, 10.95, 11.0, 11.05, 11.1, 11.15, 11.2 , 11.25, 11.3] #,bins = bins,
+ax.hist(np.log10(sigma_50), bins = bins, color='pink',ec="k")
+plt.savefig('histogram_sigma_50.pdf')

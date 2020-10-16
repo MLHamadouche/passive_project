@@ -35,7 +35,7 @@ ID_ = df.set_index(concat_3dhst['FIELD'].str.decode("utf-8").str.rstrip() + conc
 
 
 def stacks(objects_list): #input array of redshifts for given list of objects
-    new_wavs = np.arange(2400, 4200, 1.25)
+    new_wavs = np.arange(2400, 4200, 1.5)
     new_spec = np.zeros(len(new_wavs))
     new_errs = np.zeros(len(new_wavs))
 
@@ -89,7 +89,7 @@ def stacks(objects_list): #input array of redshifts for given list of objects
         colour_index.append(C29_33(new_spec))
         D4000_index.append(Dn4000(new_spec))
         Mg_UV_index.append(Mg_UV(new_spec))
-        H_delta_EW.append(H_delta(new_spec))
+        H_delta_EW.append(H_delta(new_wavs,new_spec))
 
         spec.append(new_spec)
         spec_err.append(new_errs)
@@ -106,12 +106,12 @@ def stacks(objects_list): #input array of redshifts for given list of objects
     fig1, ax1 = plt.subplots(figsize=[12,8.5])
     im1 = ax1.scatter(colour_index, Mg_UV_index, s=130, c=all_masses, cmap=plt.cm.magma, marker='o', edgecolors='black',linewidth=0.5 )
     cbar = fig1.colorbar(im1, ax=ax1)
-    cbar.set_label(r'Redshift (z)', size=12)
+    cbar.set_label(r'log10(M*/Msun)', size=12)
     #ax1.scatter(colour_index, Mg_UV_index)
     ax1.set_xlabel("C(29-33)", size=13)
     ax1.set_ylabel("MgUV index", size=13)
     plt.title('Colour index versus MgUV index', size =14)# excluding possible AGN (CDFS + UDS)')
-    plt.savefig('C_2933vMgUV_allobjects_Mcbar.pdf')
+    #plt.savefig('C_2933vMgUV_allobjects_Mcbar.pdf')
     plt.close()
 
     print(H_delta_EW)

@@ -115,10 +115,10 @@ plt.xlim(9.75, 11.5)
 plt.close()
 #plt.savefig('Rc_mass_relation_3DHST_density.pdf')
 """
-x_model = np.linspace(10.4, 11.0, len(Rc))
+x_model = np.linspace(10.4, 11.2, len(Rc))
 
 c_model = np.arange(-8.0, -3.0, 0.01)
-
+model_mask = (masses > 10.4)
 best_chi  = np.inf
 
 errs = 0.434*(Rc_errs/Rc)
@@ -126,7 +126,7 @@ errs = 0.434*(Rc_errs/Rc)
 for cvals in range(len(c_model)):
     c_vals = c_model[cvals]
 
-    y_model = 0.56*x_model + c_vals
+    y_model = 0.56*masses + c_vals
     diffs = y_model - np.log10(Rc)
     #print(diffs)
     #print(y_model, '\n', np.log10(R_c))#(0.434*(Rc_errs/R_c)
@@ -137,52 +137,70 @@ for cvals in range(len(c_model)):
         best_chi = chisq
 
 print(f'best_c {best_c} \n best_chi {best_chi}')
+
+cat2 = Table.read("Re_cat.fits").to_pandas()
+df2 = pd.DataFrame(cat2)
+df2 = df2.groupby(df2['log10(M*/Msun)']>10.4).get_group(True)
+R_e = df2["Re_kpc"]
+R_e_errs = df2["Re_kpc_errs"]
+mass = df2["log10(M*/Msun)"]
+print(len(df2))
+redshifts = df2['redshifts']
 alpha = 0.76
 log_A = 0.22
-log_Reff = log_A + alpha*np.log10(10**x/(5*10**10))
+x = np.linspace(9.5, 11.5, len(R_e))
+log_Reff = log_A + alpha*np.log10((10**x)/(5*10**10))
+
+
+def vdw_relation(logA, alpha, x_values):
+    logR_eff = logA + alpha*(np.log10((10**x_values)/(5*10**10)))
+    return logR_eff
+
 #print(shen[20])
-print(f'std mass = {np.std(masses)}')
-print(f'std Re = {np.std(Re_kpc_errs/u.kpc)}')
-log_A_model = np.arange(0.0, 0.3, 0.01)
-x_model2 = np.linspace(10.3, 11.0, len(Re_kpc/u.kpc))
+#print(f'std mass = {np.std(masses)}')
+#print(f'std Re = {np.std(Re_kpc_errs/u.kpc)}')
+print(10**0.22)
+log_A_model = np.arange(-0.3, 0.3, 0.01)
 best_chi2 = np.inf
 
 for cvals2 in range(len(log_A_model)):
     c_vals2 =log_A_model[cvals2]
 
-    vdw_model = alpha*np.log10(10**x_model2/(5*10**10)) + c_vals2
-    diffs2 = vdw_model - np.log10(Re_kpc/u.kpc)
+    vdw_model = vdw_relation(c_vals2, 0.76, mass)
+    diffs2 = vdw_model - np.log10(R_e)
     #print(diffs)
     #print(y_model, '\n', np.log10(R_c))#(0.434*(Rc_errs/R_c)
-    chisq2 = np.sum((diffs2**2)/((4.34*(Re_kpc_errs/Re_kpc))))
+    chisq2 = np.sum((diffs2**2)/((4.34*(R_e_errs/R_e))))
 
     if chisq2 < best_chi2:
-        best_c_vdw = c_vals2
         best_chi_vdw = chisq2
+        best_c_vdw = c_vals2
 
 print(f'best_c_vdw: {best_c_vdw} \n best_chi_vdw: {best_chi_vdw}')
 print(vdw_model)
 
-vdw_norm_model= best_c_vdw + alpha*np.log10(10**x/(5*10**10))
+vdw_norm_model = vdw_relation(best_c_vdw, 0.76, x)
 
 y_model = 0.56*x + (best_c)
 
-print(best_c_vdw - 0.22)
+#print(best_c_vdw - 0.22)
+#print((best_c_vdw - 0.22))
 #print(y_model[20])
 
 #print(y_model - shen)
-diff_shen_me = abs(y_model[0]) - abs(shen[0])
-print(10**diff_shen_me)
+#diff_shen_me = abs(y_model[0]) - abs(shen[0])
+#print(10**diff_shen_me)
+
 
 
 fig1, ax1 = plt.subplots(figsize=[12,8.5])
-im1 = ax1.scatter(masses, np.log10(Re_kpc/u.kpc), s=130, c=new_redshifts, cmap=plt.cm.magma, marker='o', edgecolors='black',linewidth=0.5 )
+im1 = ax1.scatter(mass, np.log10(R_e), s=130, c=redshifts, cmap=plt.cm.magma, marker='o', edgecolors='black',linewidth=0.5 )
 cbar = fig1.colorbar(im1, ax=ax1)
 #cbar.set_label(r'$\mathrm{log_{10}(sSFR/yr)}$')
 cbar.set_label(r'Redshift (z)', size=12)
-ax1.plot(x, y_model, 'k', lw = 0.7, label= 'Shen et al. local ETG relation')
-ax1.plot(x, vdw_norm_model, 'k', lw = 1.2, label=f'local ETG relation normalised by f = {round(10**diff_shen_me,2)}')
-ax1.plot(x, log_Reff, 'r' ,lw = 1.2, label= 'A. van der Wel z = 1.25 ETG relation')
+#ax1.plot(x, y_model, 'k', lw = 0.7, label= 'Shen et al. local ETG relation')
+ax1.plot(x, vdw_norm_model, 'k', lw = 1.2, label=f'v. der Wel z = 1.25 ETG relation normalised by f = {round((best_c_vdw-0.22),2)}')
+ax1.plot(x, log_Reff, 'r' ,lw = 1.2, label= 'v. der Wel z = 1.25 ETG relation (not normalised)')
 #ax1.scatter(masses, np.log10(Rc), marker='o', s=20, c='r', edgecolors='k')
 ax1.set_xlabel(r'$\mathrm{log_{10}{(M*/M_{\odot})}}$', size = 12)
 ax1.set_ylabel(r'$\mathrm{log_{10}{(R_{e}/kpc)}}$', size = 12)
@@ -190,15 +208,16 @@ plt.xticks(fontsize=10)
 plt.yticks(fontsize=10)
 plt.legend(prop={'size': 10})
 plt.title('3D-HST log10(Re) versus log10(M*/Msun)', size = 13)
-plt.xlim(9.75, 11.4)
+plt.xlim(10.3, 11.4)
 #plt.show()
-plt.savefig('Re_v_M*_test_with_Arjens_relationandbestfit.pdf')
+plt.savefig('Re_v_M*_test_with_Arjens_relationandbestfit_TEST.pdf')
 plt.close()
 
-
+input()
 #cat = Table.read('TEST_CAT.fits').to_pandas()
 cat = Table.read("Re_cat.fits").to_pandas()
 df = pd.DataFrame(cat)
+df = df.groupby(df['log10(M*/Msun)']>10.4).get_group(True)
 R_e = df["Re_kpc"]
 #print(np.log10(R_c))
 #print(y_model)
@@ -232,7 +251,7 @@ IDs_below= IDs[index_masked2].str.decode("utf-8").str.rstrip().values
 #print(IDs_above, IDs_below)
 all_IDs = np.concatenate((IDs_above, IDs_below), axis = None)
 
-print(all_IDs)
+#print(all_IDs)
 
 from indices import C29_33, Dn4000, Mg_UV # H_delta
 
@@ -268,8 +287,8 @@ plt.close()
 #    IDs_above.append(df.loc[(np.log10(R_c)[mask]==i),'IDs'].values.tolist())
 
 #print(len(IDs_above), len(IDs_below))
-new_wavs = np.arange(2400, 4200, 1.25)
-stacking_all = stacks(all_IDs)
+new_wavs = np.arange(2400, 4200, 1.5)
+#stacking_all = stacks(all_IDs)
 #stacking_above = stacks(IDs_above)
 
 
@@ -284,7 +303,7 @@ def plot_stackssingle(stack, name, color):
     plt.savefig('stacking_'+str(name)+'_vdw_relation_ALL_TEST.pdf')
     plt.close()
     #plt.show()
-input()
+
 #plot_stackssingle(stacking_above, 'above', 'r')
 
 #stacking_below = stacks(IDs_below)
@@ -342,9 +361,9 @@ if np.less(size,np.array(0.56*x + np.ones(95)*(best_c)))==True:
 """
 #print(f'IDs_above {IDs_above}')
 #print(f'IDs_below {IDs_below}')
-low_lim = 10.4
+low_lim = 11.0
 upp_lim = 11.3
-mass_mask = (masses>low_lim) & (masses <= upp_lim)
+mass_mask = (masses>low_lim) & (masses < upp_lim)
 cat1 = Table.read("Re_cat.fits").to_pandas()
 
 df0 = pd.DataFrame(cat1[mass_mask])
@@ -389,10 +408,13 @@ IDs_below_1075_11= IDs[index_masked2_mass].str.decode("utf-8").str.rstrip().valu
 #print(IDs_below_1075_11)
 
 #if y0 > 0.56*x0 + best_c:
-stacking_above_1075_11 = stacks(IDs_above_1075_11)
-new_wavs = np.arange(2400, 4200, 1.25)
+#stacking_above_1075_11 = stacks(IDs_above_1075_11)
+new_wavs = np.arange(2400, 4200, 1.5)
 
 def plot_stackssingle(stack, name, color):
+    plt.rc('font', family='serif')
+    plt.rc('xtick', labelsize='x-small')
+    plt.rc('ytick', labelsize='x-small')
     plt.figure(figsize=(20,8))
     plt.plot(new_wavs, stack*10**18, color=color, lw=1.5 )
     plt.xlabel("Wavelength ($\mathrm{\AA}$)", size=17)
@@ -400,20 +422,23 @@ def plot_stackssingle(stack, name, color):
     plt.xlim(2350, 4250)
     #plt.ylim(0 ,1.8)
     plt.title('median stacks '+ str(name) +f' line \n ({low_lim} < (log(M*) <= {upp_lim})', size =18)# excluding possible AGN (CDFS + UDS)')
-    plt.savefig('stacking_'+str(name)+'_vdw_relation_'+str(low_lim)+'_'+str(upp_lim)+'_stacknormalisationremoved.pdf')
+    plt.savefig('stacking_'+str(name)+'_vdw_relation_'+str(low_lim)+'_'+str(upp_lim)+'_stacknormgone.pdf')
     plt.close()
     #plt.show()
 
-plot_stackssingle(stacking_above_1075_11, 'above', 'r')
+#plot_stackssingle(stacking_above_1075_11, 'above', 'r')
 
 
 
-stacking_below_1075_11 = stacks(IDs_below_1075_11)
+#stacking_below_1075_11 = stacks(IDs_below_1075_11)
 
-plot_stackssingle(stacking_below_1075_11,'below', 'k')
+#plot_stackssingle(stacking_below_1075_11,'below', 'k')
 
 
 def plot_stacks(stack1, stack2):
+    plt.rc('font', family='serif')
+    plt.rc('xtick', labelsize='x-small')
+    plt.rc('ytick', labelsize='x-small')
     plt.figure(figsize=(20,8))
     #plt.plot(new_wavs, stack2*10**18, color="k", lw=1.5, label = f'below relation (N = {len(IDs_below_1075_11)})')
     plt.plot(new_wavs, stack1*10**18, color="r", lw=1.5, ls ='-', label = f'above relation (N = {len(IDs_above_1075_11)})')
@@ -424,11 +449,11 @@ def plot_stacks(stack1, stack2):
     #plt.ylim(0. ,1.75)
     plt.legend(fontsize=14)
     plt.title(f'Median stacks above and below normalised van der Wel ETG relation \n ({low_lim} < (log(M*) <= {upp_lim})', size = 18)# excluding possible AGN (CDFS + UDS)')
-    plt.savefig('stacks_abovebelow_vdw_relation_'+str(low_lim)+'_'+str(upp_lim)+'_stacknormalisationremoved.pdf')
+    plt.savefig('stacks_abovebelow_vdw_relation_'+str(low_lim)+'_'+str(upp_lim)+'_stacknormgone.pdf')
     plt.close()
     #plt.show()
 
-plot_stacks(stacking_above_1075_11, stacking_below_1075_11)
+#plot_stacks(stacking_above_1075_11, stacking_below_1075_11)
 
 """
 c_ind = C29_33(stacking_below_1075_11)
@@ -457,32 +482,103 @@ mask = (masses>10.4)
 df2 = pd.DataFrame(cat1[mask])
 R_e = df2['Re_kpc']
 sigma_50 = (10**masses[mask])/(2*(R_e)**2)
+
 redshifts = df2['redshifts']
 mass_ = df2['log10(M*/Msun)']
 #redshift = df0['redshifts']
 #redshift = np.array(redshift[(mass_>10.4)])
 print(len(redshifts))
 #print(sigma_50)
-
+plt.rc('font', family='serif')
+plt.rc('xtick', labelsize='small')
+plt.rc('ytick', labelsize='small')
 fig1, ax1 = plt.subplots(figsize=[12,8.5])
 im1 = ax1.scatter(mass_, np.log10(sigma_50), s=130, c=redshifts, cmap=plt.cm.magma, marker='o', edgecolors='black',linewidth=0.5 )
 #cbar = fig1.colorbar(im1, ax=ax1)
+y = 9.6*np.ones(len(mass_))
+ax1.plot(mass_, y)
 #cbar.set_label(r'Redshift (z)', size=12)
 ax1.set_xlabel(r'$\mathrm{log_{10}{(M*/M_{\odot})}}$', size = 12)
 ax1.set_ylabel(r'$\mathrm{log_{10}{(\sigma_{50}/M_{\odot} kpc^{-2})}}$', size = 12)
 plt.xticks(fontsize=10)
 #plt.yscale('log')
 #plt.xscale('log')
+plt.xlim(np.min(mass_), np.max(mass_))
+
 plt.yticks(fontsize=10)
 plt.title('Mass surface density versus log stellar mass', size = 13)
 plt.savefig('sigma_50_v_mass_(masscomp).pdf')
 plt.close()
 
+sig_mask = (np.log10(sigma_50)>y)
+print(sig_mask)
+index_masked_sig= np.log10(R_e)[sig_mask].index.to_list()
+IDs_top_half_sigma = IDs[index_masked_sig].str.decode("utf-8").str.rstrip().values
+print(IDs_top_half_sigma)
+print(len(IDs_top_half_sigma))
 
+sig_mask_below = (np.log10(sigma_50)<=y)
+index_masked_sig_below= np.log10(R_e)[sig_mask_below].index.to_list()
+IDs_bottom_half_sigma = IDs[index_masked_sig_below].str.decode("utf-8").str.rstrip().values
+print(len(IDs_bottom_half_sigma)) #32 obs below sig_50 half
+
+
+stack_top_half_sig = stacks(IDs_top_half_sigma)
+
+stack_bottom_half_sig = stacks(IDs_bottom_half_sigma)
+def plot_stacks(stack1, stack2, name):
+    plt.rc('font', family='serif')
+    plt.rc('xtick', labelsize='small')
+    plt.rc('ytick', labelsize='small')
+    plt.figure(figsize=(20,8))
+    #plt.plot(new_wavs, stack2*10**18, color="k", lw=1.5, label = f'below relation (N = {len(IDs_below_1075_11)})')
+    plt.plot(new_wavs, stack1*10**18, color="r", lw=1.5, ls ='-', label = r' High $\mathrm{\sigma_{50}}$ (N = 46)')
+    plt.plot(new_wavs, stack2*10**18, color="k", lw=1.5, label = r'Low $\mathrm{\sigma_{50}}$ (N = 32)')
+    plt.xlabel("Wavelength ($\mathrm{\AA}$)", size=17)
+    plt.ylabel("Flux", size =17)#$(10^{-18}\ \mathrm{erg\ s^{-1}\ cm^{-2}\ \\AA{^{-1}})}$", size=17)
+    plt.xlim(2350, 4240)
+    #plt.ylim(0. ,1.75)
+    plt.legend(fontsize=14)
+    plt.title(r'Median stacks of low & high $\mathrm{\sigma_{50}}', size = 18)# excluding possible AGN (CDFS + UDS)')
+    plt.savefig(str(name)+'.pdf')
+    plt.close()
+
+plot_stacks(stack_top_half_sig, stack_bottom_half_sig, 'stacks_bottom_and_top_half_sigma_50')
+
+def plot_stacks_single(stack1, stack2, name1, name2):
+    plt.rc('font', family='serif')
+    plt.rc('xtick', labelsize='small')
+    plt.rc('ytick', labelsize='small')
+    plt.figure(figsize=(20,8))
+    plt.plot(new_wavs, stack1*10**18, color="r", lw=1.5, ls ='-', label = r' High $\mathrm{\sigma_{50}}$ (N = 46)')
+    plt.xlabel("Wavelength ($\mathrm{\AA}$)", size=17)
+    plt.ylabel("Flux", size =17)#$(10^{-18}\ \mathrm{erg\ s^{-1}\ cm^{-2}\ \\AA{^{-1}})}$", size=17)
+    plt.xlim(2350, 4240)
+    plt.legend(fontsize=14)
+    plt.title(r'Median stack of high $\mathrm{\sigma_{50}}$', size = 18)# excluding possible AGN (CDFS + UDS)')
+    plt.savefig(str(name1)+'.pdf')
+    plt.close()
+
+    plt.figure(figsize=(20,8))
+    #plt.plot(new_wavs, stack2*10**18, color="r", lw=1.5, ls ='-', label = r' High $\mathrm{\sigma_{50}}$ (N = 46)')
+    plt.plot(new_wavs, stack2*10**18, color="k", lw=1.5, label = r'Low $\mathrm{\sigma_{50}}$ (N = 32)')
+    plt.xlabel("Wavelength ($\mathrm{\AA}$)", size=17)
+    plt.ylabel("Flux", size =17)#$(10^{-18}\ \mathrm{erg\ s^{-1}\ cm^{-2}\ \\AA{^{-1}})}$", size=17)
+    plt.xlim(2350, 4240)
+    #plt.ylim(0. ,1.75)
+    plt.legend(fontsize=14)
+    plt.title(r'Median stack of low $\mathrm{\sigma_{50}}$', size = 18)# excluding possible AGN (CDFS + UDS)')
+    plt.savefig(str(name2)+'.pdf')
+    plt.close()
+
+plot_stacks_single(stack_top_half_sig, stack_bottom_half_sig, 'top_half_sigma_50', 'bottom_half_sigma_50')
 ### histogram for mass complete (ish) sample log10(M*) > 10.4
-print(np.max(masses))
+#print(np.max(masses))
 fig, ax = plt.subplots(figsize = [12,8.5])
-bins = np.linspace(10.4, 11.3, 21)
+#bins = np.linspace(10.4, 11.3, 21)
 #bins = [10.4, 10.45, 10.5, 10.55,10.6, 10.65, 10.7, 10.75, 10.8, 10.85, 10.9, 10.95, 11.0, 11.05, 11.1, 11.15, 11.2 , 11.25, 11.3] #,bins = bins,
-ax.hist(np.log10(sigma_50), bins = bins, color='pink',ec="k")
+ax.hist(np.log10(sigma_50),color='pink',ec="k")
+ax.set_xlabel(r'$\mathrm{log_{10}{(\sigma_{50}/M_{\odot} kpc^{-2})}}$', size = 12)
+ax.set_ylabel('N', size = 12)
+ax.xaxis.grid(True, which='minor')
 plt.savefig('histogram_sigma_50.pdf')

@@ -251,13 +251,8 @@ IDs_below= IDs[index_masked2].str.decode("utf-8").str.rstrip().values
 #print(IDs_above, IDs_below)
 all_IDs = np.concatenate((IDs_above, IDs_below), axis = None)
 
-#print(all_IDs)
+print(len(all_IDs))
 
-from indices import C29_33, Dn4000, Mg_UV # H_delta
-
-colour_index = []
-D4000_index =[]
-Mg_UV_index = []
 """"
 for names in all_IDs:
     spectrum = ld.load_vandels_spectra(names)
@@ -408,8 +403,8 @@ IDs_below_1075_11= IDs[index_masked2_mass].str.decode("utf-8").str.rstrip().valu
 #print(IDs_below_1075_11)
 
 #if y0 > 0.56*x0 + best_c:
-#stacking_above_1075_11 = stacks(IDs_above_1075_11)
-new_wavs = np.arange(2400, 4200, 1.5)
+
+new_wavs = np.arange(2400, 4200, 1.25)
 
 def plot_stackssingle(stack, name, color):
     plt.rc('font', family='serif')
@@ -429,8 +424,8 @@ def plot_stackssingle(stack, name, color):
 #plot_stackssingle(stacking_above_1075_11, 'above', 'r')
 
 
-
-#stacking_below_1075_11 = stacks(IDs_below_1075_11)
+stacking_above_1075_11 = stacks(IDs_above_1075_11)
+stacking_below_1075_11 = stacks(IDs_below_1075_11)
 
 #plot_stackssingle(stacking_below_1075_11,'below', 'k')
 
@@ -455,29 +450,29 @@ def plot_stacks(stack1, stack2):
 
 #plot_stacks(stacking_above_1075_11, stacking_below_1075_11)
 
-"""
+
 c_ind = C29_33(stacking_below_1075_11)
-print(f'C(29-33) index below: {c_ind}')
+print(f'C(29-33){low_lim} - {upp_lim} index below: {c_ind}')
 c_ind = C29_33(stacking_above_1075_11)
-print(f'C(29-33) index above : {c_ind}')
+print(f'C(29-33) {low_lim} - {upp_lim}  index above : {c_ind}')
 dn4000 = Dn4000(stacking_above_1075_11)
-print(f'Dn4000 index above: {dn4000}')
+print(f'Dn4000 {low_lim} - {upp_lim} index above: {dn4000}')
 dn4000 = Dn4000(stacking_below_1075_11)
-print(f'Dn4000 index below: {dn4000}')
+print(f'Dn4000 {low_lim} - {upp_lim} index below: {dn4000}')
 
 
-Mg_UV_index = Mg_UV(stacking_below)
-print(f'Mg_UV index below: {Mg_UV_index}')
+Mg_UV_index = Mg_UV(stacking_below_1075_11)
+print(f'Mg_UV {low_lim} - {upp_lim} index below: {Mg_UV_index}')
 #plot_stackssingle(stacking_below,'below', 'k')
-Mg_UV_index = Mg_UV(stacking_above)
-print(f'Mg_UV index above: {Mg_UV_index}')
+Mg_UV_index = Mg_UV(stacking_above_1075_11)
+print(f'Mg_UV {low_lim} - {upp_lim} index above: {Mg_UV_index}')
 #𝑦0>𝑎𝑥0+𝑏 then the point is above the line, etc.
-H_delta_EW = H_delta(stacking_above)
-print(f'H_delta_EW above: {H_delta_EW}')
+H_delta_EW = H_delta(stacking_above_1075_11, new_wavs)
+print(f'H_delta_EW {low_lim} - {upp_lim} above: {H_delta_EW}')
 
-H_delta_EW = H_delta(stacking_below)
-print(f'H_delta_EW above: {H_delta_EW}')
-"""
+H_delta_EW = H_delta(stacking_below_1075_11, new_wavs)
+print(f'H_delta_EW {low_lim} - {upp_lim} below: {H_delta_EW}')
+input()
 mask = (masses>10.4)
 df2 = pd.DataFrame(cat1[mask])
 R_e = df2['Re_kpc']

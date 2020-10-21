@@ -5,7 +5,7 @@ import astropy.table as Table
 import LoadData as ld
 
 #input median stacked fluxes,
-wavs = np.arange(2400, 4200, 1.5)
+wavs = np.arange(2400, 4200, 1.25)
 
 def Dn4000(fluxes):
     #n is for narrow - less sensitive to reddening effects, used more in literature - 4000A to 4100A instead of 4050 - 4250
@@ -39,29 +39,34 @@ def C29_33(fluxes):
     return C_ind
 
 
-def H_delta(wavs, fluxes):
-    #from Bolagh.M, 1999
-    #changed to make either side 40Angstroms so no weighting change needed
-    mask_blue = (wavs > 4042) & (wavs<4082) #blue continuum
-
-    flux_blue = fluxes[mask_blue]
-    mask_red = (wavs > 4122) & (wavs<4162) #red continuum
-    flux_red = fluxes[mask_red]
+def H_delta(fluxes, wavs):
+    #continuum & line edges from Bolagh.M, 1999
+    #changed to make either side 40 Angstroms so no weighting change needed
+    blue_cont = [4042., 4082.]
+    red_cont = [4122., 4162.]
+    line_edges = [4082., 4122.]
+    mask_blue = (wavs > blue_cont[0]) & (wavs < blue_cont[1]) #blue continuum
+    flux_blue = np.array(fluxes[mask_blue])
+    mask_red = (wavs > red_cont[0]) & (wavs < red_cont[1]) #red continuum
+    flux_red = np.array(fluxes[mask_red])
     #flux_red = fluxes[mask_red]
-    line = (wavs>4082) & (wavs < 4122)
-    flux_line = fluxes[line]
-    flux_continuum = np.mean(np.mean(flux_blue)+np.mean(flux_red)) #one number
-    H_delta_EW = ((flux_continuum - np.mean(flux_line))*40)/flux_continuum
+    line = (wavs > line_edges[0]) & (wavs < line_edges[1])
+
+    flux_feature = np.nanmean(np.array(fluxes[line]))
+
+    line_width  = line_edges[1] - line_edges[0] #angstroms
+    flux_continuum = np.sum(np.nanmean(flux_blue)+np.nanmean(flux_red))/2 #one number
+    H_delta_EW = line_width*(flux_continuum - flux_feature)
+    H_delta_EW /=flux_continuum
     #multiply by 40 angstroms / continuum flux
     # EW found by summing fluxes in region, and fitting with gaussian
 
     return H_delta_EW #negative if emission, postive if absorption
-#mask_2825 = (wavs > 2725) & (wavs < 2825)
-#print(wavs[mask_2825])
+
 
 
 def Mg_UV(flux):
-    mask_2625 = (wavs<2625)& (wavs > 2525)
+    mask_2625 = (wavs < 2625)& (wavs > 2525)
     mask_2725 = (wavs > 2625) & (wavs < 2725)
     mask_2825 = (wavs > 2725) & (wavs < 2825)
     int_flux_2725 = np.trapz(flux[mask_2725], x = wavs[mask_2725])

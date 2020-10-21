@@ -31,7 +31,6 @@ passive_cut = Table.read('FirstProjectCatalogs/x_match_final_passive_sample_edit
 redshifts = passive_cut['zspec']
 #print(redshifts)
 ID_list = np.array(passive_cut['FIELD'].str.decode("utf-8").str.rstrip() + passive_cut['ID_1'].astype(str).str.pad(6, side='left', fillchar='0')+ passive_cut['CAT'].str.decode("utf-8"))
-#print(ID_list)
 
 filt_list = []
 for object in ID_list:

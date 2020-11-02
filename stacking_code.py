@@ -89,8 +89,8 @@ def stacks(objects_list): #input array of redshifts for given list of objects
         colour_index.append(C29_33(new_spec))
         D4000_index.append(Dn4000(new_spec))
         Mg_UV_index.append(Mg_UV(new_spec))
-        H_delta_EW.append(H_delta(new_wavs,new_spec))
-        #print(len(H_delta_EW))
+        H_delta_EW.append(H_delta(new_spec, new_wavs))
+        print(len(H_delta_EW))
         spec.append(new_spec)
         spec_err.append(new_errs)
 

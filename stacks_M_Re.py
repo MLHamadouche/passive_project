@@ -274,7 +274,7 @@ plt.savefig('C_2933vMgUV_allobjects.pdf')
 plt.close()
 """
 
-
+new_wavs = np.arange(2400, 4200, 1.25)
 #print((0.56*x + (best_c)).shape)
 #print(mask)
 #for i in size[mask]:
@@ -282,8 +282,8 @@ plt.close()
 #    IDs_above.append(df.loc[(np.log10(R_c)[mask]==i),'IDs'].values.tolist())
 
 #print(len(IDs_above), len(IDs_below))
-new_wavs = np.arange(2400, 4200, 1.5)
-#stacking_all = stacks(all_IDs)
+
+stacking_all = stacks(all_IDs)
 #stacking_above = stacks(IDs_above)
 
 
@@ -299,32 +299,12 @@ def plot_stackssingle(stack, name, color):
     plt.close()
     #plt.show()
 
-#plot_stackssingle(stacking_above, 'above', 'r')
+plot_stackssingle(stacking_all, 'all_newHdeltaEW', 'r')
+
+input()
 
 #stacking_below = stacks(IDs_below)
 from indices import C29_33, Dn4000, Mg_UV, H_delta
-"""
-c_ind = C29_33(stacking_below)
-print(f'C(29-33) index below: {c_ind}')
-c_ind = C29_33(stacking_above)
-print(f'C(29-33) index above : {c_ind}')
-dn4000 = Dn4000(stacking_above)
-print(f'Dn4000 index above: {dn4000}')
-dn4000 = Dn4000(stacking_below)
-print(f'Dn4000 index below: {dn4000}')
-
-Mg_UV_index = Mg_UV(stacking_below)
-print(f'Mg_UV index below: {Mg_UV_index}')
-#plot_stackssingle(stacking_below,'below', 'k')
-Mg_UV_index = Mg_UV(stacking_above)
-print(f'Mg_UV index above: {Mg_UV_index}')
-
-#H_delta_EW = H_delta(stacking_above)
-#print(f'H_delta_EW above: {H_delta_EW}')
-
-#H_delta_EW = H_delta(stacking_below)
-#print(f'H_delta_EW above: {H_delta_EW}')
-"""
 
 
 def plot_stacks(stack1, stack2):
@@ -356,55 +336,92 @@ if np.less(size,np.array(0.56*x + np.ones(95)*(best_c)))==True:
 """
 #print(f'IDs_above {IDs_above}')
 #print(f'IDs_below {IDs_below}')
-low_lim = 11.0
-upp_lim = 11.3
-mass_mask = (masses>low_lim) & (masses < upp_lim)
-cat1 = Table.read("Re_cat.fits").to_pandas()
-
-df0 = pd.DataFrame(cat1[mass_mask])
-R_e = df0["Re_kpc"]
-index = np.log10(R_e).index.to_list()
-size  = np.array(np.log10(R_e))
-#y_model = np.array(y_model)
-#vdw_norm_model = np.array(vdw_norm_model)
-#cat1 = Table.read('TEST_CAT.fits').to_pandas()
-
-#R_c = df0["R_c_size"]
-mass_ = df0['log10(M*/Msun)']
-#size = np.log10(R_e)
-#y_model = np.array(y_model)
-#x_mask = (x>10.5)&(x<=10.75)
-x_array= np.linspace(low_lim, upp_lim, len(size))
-#y_model  = 0.56*x_array+(best_c)
-vdw_norm_model = best_c_vdw + alpha*np.log10((10**x_array)/(5*10**10))
-
-print(len(vdw_norm_model))
-print(len(R_e))
-#mask = (size>y_model)
-#mask1 = (size<y_model)
-
-mask = (size>vdw_norm_model)
-mask1 = (size<vdw_norm_model)
-
-#print(IDs_above[mass_mask])
-
-
-
-index_masked_mass= np.log10(R_e)[mask].index.to_list()
-index_masked2_mass = np.log10(R_e)[mask1].index.to_list()
-#print(size.shape)
-#print('size_mask1:',size[mask1])
-#print(len(size[mask1]))
-
-IDs_above_1075_11 = IDs[index_masked_mass].str.decode("utf-8").str.rstrip().values
-IDs_below_1075_11= IDs[index_masked2_mass].str.decode("utf-8").str.rstrip().values
-#point = x0,y0
-#print(IDs_above_1075_11)
-#print(IDs_below_1075_11)
-
-#if y0 > 0.56*x0 + best_c:
 
 new_wavs = np.arange(2400, 4200, 1.25)
+low_lim, upp_lim = 10.75, 11.0
+low_lim2, upp_lim2 = 11.0, 11.3
+low_lim3, upp_lim3 = 10.5, 10.75
+
+cat1 = Table.read("Re_cat.fits").to_pandas()
+
+def stack_lims(lower_lim, higher_lim):
+    mass_mask = (masses>lower_lim) & (masses < higher_lim)
+    df0 = pd.DataFrame(cat1[mass_mask])
+    R_e = df0["Re_kpc"]
+    index = np.log10(R_e).index.to_list()
+    size  = np.array(np.log10(R_e))
+    mass_ = df0['log10(M*/Msun)']
+    x_array = np.linspace(lower_lim, higher_lim, len(size))
+    vdw_norm_model = best_c_vdw + alpha*np.log10((10**x_array)/(5*10**10))
+    mask = (size>vdw_norm_model)
+    mask1 = (size<vdw_norm_model)
+    index_masked_mass = np.log10(R_e)[mask].index.to_list()
+    index_masked2_mass = np.log10(R_e)[mask1].index.to_list()
+
+    IDs_above = IDs[index_masked_mass].str.decode("utf-8").str.rstrip().values
+    IDs_below = IDs[index_masked2_mass].str.decode("utf-8").str.rstrip().values
+
+    stacking_above = stacks(IDs_above)
+    stacking_below = stacks(IDs_below)
+    stacking_both = stacking_above, stacking_below
+
+    return stacking_both
+
+
+stacking_both_1075_11 = stack_lims(low_lim, upp_lim)
+stacks_above_1075_11, stacks_below_1075_11 = stacking_both_1075_11[0], stacking_both_1075_11[1]
+stacking_both_105_1075 = stack_lims(low_lim3, upp_lim3)
+stacks_above_105_1075, stacks_below_105_1075 = stacking_both_105_1075[0], stacking_both_105_1075[1]
+stacking_both_11_113= stack_lims(low_lim2, upp_lim2)
+stacks_above_11_113, stacks_below_11_113 = stacking_both_11_113[0], stacking_both_11_113[1]
+
+c_ind_below1075 = C29_33(stacks_below_1075_11)
+c_ind_above1075 = C29_33(stacks_above_1075_11)
+dn4000_above1075 = Dn4000(stacks_above_1075_11)
+dn4000_below1075 = Dn4000(stacks_below_1075_11)
+Mg_UV_index_below1075 = Mg_UV(stacks_below_1075_11)
+Mg_UV_index_above1075 = Mg_UV(stacks_above_1075_11)
+H_delta_EW_above1075 = H_delta(stacks_above_1075_11, new_wavs)
+H_delta_EW_below1075 = H_delta(stacks_below_1075_11, new_wavs)
+
+c_ind_below105 = C29_33(stacks_below_105_1075)
+c_ind_above105 = C29_33(stacks_above_105_1075)
+dn4000_above105 = Dn4000(stacks_above_105_1075)
+dn4000_below105 = Dn4000(stacks_below_105_1075)
+Mg_UV_index_below105 = Mg_UV(stacks_below_105_1075)
+Mg_UV_index_above105 = Mg_UV(stacks_above_105_1075)
+H_delta_EW_above105 = H_delta(stacks_above_105_1075, new_wavs)
+H_delta_EW_below105 = H_delta(stacks_below_105_1075, new_wavs)
+
+c_ind_below11 = C29_33(stacks_below_11_113)
+c_ind_above11 = C29_33(stacks_above_11_113)
+dn4000_above11 = Dn4000(stacks_above_11_113)
+dn4000_below11 = Dn4000(stacks_below_11_113)
+Mg_UV_index_below11 = Mg_UV(stacks_below_11_113)
+Mg_UV_index_above11 = Mg_UV(stacks_above_11_113)
+H_delta_EW_above11 = H_delta(stacks_above_11_113, new_wavs)
+H_delta_EW_below11 = H_delta(stacks_below_11_113, new_wavs)
+#print(Mg_UV_index_above11)
+
+data = {'(log(M*/Msun))': ['10.5 - 10.75','  ','10.75 - 11.0','  ','11.0 - 11.3','  '],
+        'above/below': ['above','below','above','below','above','below'],
+        'EW(Hdelta)': [round(H_delta_EW_above105,5),round(H_delta_EW_below105,5),round(H_delta_EW_below1075,5),round(H_delta_EW_below1075,5),round(H_delta_EW_above11,5),round(H_delta_EW_below11,5)],
+        'Mg_UV': [round(Mg_UV_index_above105,5),round(Mg_UV_index_below105,5),round(Mg_UV_index_above1075,5),round(Mg_UV_index_below1075, 5),round(Mg_UV_index_above11,5),round(Mg_UV_index_below11,5)],
+        'C(29-33)': [round(c_ind_above105,5),round(c_ind_below105,5),round(c_ind_above1075,5),round(c_ind_below1075,5),round(c_ind_above11,5), round(c_ind_below11,5)],
+        'Dn4000': [round(dn4000_above105,5),round(dn4000_below105,5),round(dn4000_above1075,5),round(dn4000_below1075,5),round(dn4000_above11,5),round(dn4000_below11,5)],
+        }
+
+df = pd.DataFrame(data, columns = ['(log(M*/Msun))','above/below', r'EW(Hdelta)', r'Mg_UV', 'C(29-33)', r'Dn4000'])
+df['(log(M*/Msun))'] = df['(log(M*/Msun))'].astype(str)
+df['Mg_UV'] = df['Mg_UV'].astype(float)
+df['Dn4000'] = df['Dn4000'].astype(float)
+#print (df)
+
+table = Table.from_pandas(df)
+from astropy.io import ascii
+print(table)
+
+ascii.write(table, 'indices_for_stacks.dat')
 
 def plot_stackssingle(stack, name, color):
     plt.rc('font', family='serif')
@@ -420,15 +437,6 @@ def plot_stackssingle(stack, name, color):
     plt.savefig('stacking_'+str(name)+'_vdw_relation_'+str(low_lim)+'_'+str(upp_lim)+'_stacknormgone.pdf')
     plt.close()
     #plt.show()
-
-#plot_stackssingle(stacking_above_1075_11, 'above', 'r')
-
-
-stacking_above_1075_11 = stacks(IDs_above_1075_11)
-stacking_below_1075_11 = stacks(IDs_below_1075_11)
-
-#plot_stackssingle(stacking_below_1075_11,'below', 'k')
-
 
 def plot_stacks(stack1, stack2):
     plt.rc('font', family='serif')
@@ -450,28 +458,9 @@ def plot_stacks(stack1, stack2):
 
 #plot_stacks(stacking_above_1075_11, stacking_below_1075_11)
 
+#plot_stackssingle(stacking_above_1075_11, 'above', 'r')
+#plot_stackssingle(stacking_below_1075_11,'below', 'k')
 
-c_ind = C29_33(stacking_below_1075_11)
-print(f'C(29-33){low_lim} - {upp_lim} index below: {c_ind}')
-c_ind = C29_33(stacking_above_1075_11)
-print(f'C(29-33) {low_lim} - {upp_lim}  index above : {c_ind}')
-dn4000 = Dn4000(stacking_above_1075_11)
-print(f'Dn4000 {low_lim} - {upp_lim} index above: {dn4000}')
-dn4000 = Dn4000(stacking_below_1075_11)
-print(f'Dn4000 {low_lim} - {upp_lim} index below: {dn4000}')
-
-
-Mg_UV_index = Mg_UV(stacking_below_1075_11)
-print(f'Mg_UV {low_lim} - {upp_lim} index below: {Mg_UV_index}')
-#plot_stackssingle(stacking_below,'below', 'k')
-Mg_UV_index = Mg_UV(stacking_above_1075_11)
-print(f'Mg_UV {low_lim} - {upp_lim} index above: {Mg_UV_index}')
-#𝑦0>𝑎𝑥0+𝑏 then the point is above the line, etc.
-H_delta_EW = H_delta(stacking_above_1075_11, new_wavs)
-print(f'H_delta_EW {low_lim} - {upp_lim} above: {H_delta_EW}')
-
-H_delta_EW = H_delta(stacking_below_1075_11, new_wavs)
-print(f'H_delta_EW {low_lim} - {upp_lim} below: {H_delta_EW}')
 input()
 mask = (masses>10.4)
 df2 = pd.DataFrame(cat1[mask])
@@ -534,7 +523,7 @@ def plot_stacks(stack1, stack2, name):
     plt.xlim(2350, 4240)
     #plt.ylim(0. ,1.75)
     plt.legend(fontsize=14)
-    plt.title(r'Median stacks of low & high $\mathrm{\sigma_{50}}', size = 18)# excluding possible AGN (CDFS + UDS)')
+    plt.title(r'Median stacks of low & high $\mathrm{\sigma_{50}}$', size = 18)# excluding possible AGN (CDFS + UDS)')
     plt.savefig(str(name)+'.pdf')
     plt.close()
 

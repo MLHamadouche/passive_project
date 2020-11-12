@@ -34,6 +34,9 @@ df1 = pd.DataFrame(vandels_cat_pipes)
 ID_pipes = vandels_cat_pipes['#ID'].values
 IDs = df1.set_index(s.decode('utf-8') for s in vandels_cat_pipes['#ID'])
 
+#df2 = pd.DataFrame(vandels_cat_pipes)
+#df2 = df2.groupby(df2['stellar_mass_50']>10.4).get_group(True)
+#ssfr2 = df2["ssfr_50"]
 UV = vandels_cat_pipes['UV_colour_50']
 VJ = vandels_cat_pipes['VJ_colour_50']
 age1 = vandels_cat_pipes['mass_weighted_age_50']
@@ -43,6 +46,9 @@ redshifts = concat_3dhst['zspec']
 
 mass = passive_cut["log10(M*)"]
 
+print(len(ssfr))
+
+input()
 list_IDs = []
 ages = []
 masses = []
@@ -59,10 +65,11 @@ for i in ID_list1:
 new_IDs = []
 new_redshifts = []
 q_ratio = []
+ssfr2 = []
 for ID in list_IDs:
     if ID not in agn:
         new_redshifts.append(ID_.loc[ID, "zspec"])
-
+        ssfr2.append(IDs.loc[ID, "ssfr_50"])
         ages.append(IDs.loc[ID, "mass_weighted_age_50"])
         #print(all_ages)
         masses.append(ID_list.loc[ID, "log10(M*)"])
@@ -90,8 +97,8 @@ col3 = fits.Column(name='age', format='E',  array=ages)
 col4 = fits.Column(name='log10(M*/Msun)', format='E', array=masses)
 col5 = fits.Column(name='Re_kpc', format='E', array=Re_kpc/u.kpc)
 col6 = fits.Column(name='Re_kpc_errs', format='E', array=Re_kpc_errs/u.kpc)
-
-hdu = fits.BinTableHDU.from_columns([col1, col2, col3, col4, col5, col6])
+col7 = fits.Column(name ='SSFR', format = 'E', array = ssfr2)
+hdu = fits.BinTableHDU.from_columns([col1, col2, col3, col4, col5, col6, col7])
 #hdu = fits.BinTableHDU.from_columns([col1, col2, col3, col4, col9, col5, col6 ])
 #file =  "Re_cat.fits"
 #hdu.writeto(file)
@@ -144,6 +151,7 @@ df2 = df2.groupby(df2['log10(M*/Msun)']>10.4).get_group(True)
 R_e = df2["Re_kpc"]
 R_e_errs = df2["Re_kpc_errs"]
 mass = df2["log10(M*/Msun)"]
+ssfr_50 = df2["SSFR"]
 print(len(df2))
 redshifts = df2['redshifts']
 alpha = 0.76
@@ -195,9 +203,9 @@ y_model = 0.56*x + (best_c)
 
 fig1, ax1 = plt.subplots(figsize=[12,8.5])
 im1 = ax1.scatter(mass, np.log10(R_e), s=130, c=redshifts, cmap=plt.cm.magma, marker='o', edgecolors='black',linewidth=0.5 )
-cbar = fig1.colorbar(im1, ax=ax1)
+cbar1 = fig1.colorbar(im1, ax=ax1)
 #cbar.set_label(r'$\mathrm{log_{10}(sSFR/yr)}$')
-cbar.set_label(r'Redshift (z)', size=12)
+cbar1.set_label(r'Redshift (z)', size=12)
 #ax1.plot(x, y_model, 'k', lw = 0.7, label= 'Shen et al. local ETG relation')
 ax1.plot(x, vdw_norm_model, 'k', lw = 1.2, label=f'v. der Wel z = 1.25 ETG relation normalised by f = {round((best_c_vdw-0.22),2)}')
 ax1.plot(x, log_Reff, 'r' ,lw = 1.2, label= 'v. der Wel z = 1.25 ETG relation (not normalised)')
@@ -211,6 +219,97 @@ plt.title('3D-HST log10(Re) versus log10(M*/Msun)', size = 13)
 plt.xlim(10.3, 11.4)
 #plt.show()
 plt.savefig('Re_v_M*_test_with_Arjens_relationandbestfit_TEST.pdf')
+plt.close()
+
+
+mg_uv_massi, colour_massi = np.loadtxt('MgUV_colour.dat', delimiter = ' ', unpack=True)
+hdelta_massi, d4000_massi = np.loadtxt('hdelta_d4000.dat',  delimiter = ' ', unpack=True)
+
+
+print(len(d4000_massi))
+print(np.median(np.log10(R_e)))
+fig2, ax2 = plt.subplots(figsize=[12,8.5])
+im2 = ax2.scatter(mass, np.log10(R_e), s=130, c=hdelta_massi, cmap=plt.cm.magma, marker='o', edgecolors='black',linewidth=0.5 )
+cbar2 = fig2.colorbar(im2, ax=ax2)
+#cbar.set_label(r'$\mathrm{log_{10}(sSFR/yr)}$')
+cbar2.set_label(r'$EW(H\delta)$', size=12)
+#ax1.plot(x, y_model, 'k', lw = 0.7, label= 'Shen et al. local ETG relation')
+ax2.plot(x, vdw_norm_model, 'k', lw = 1.2, label=f'v. der Wel z = 1.25 ETG relation normalised by f = {round((best_c_vdw-0.22),2)}')
+#ax1.plot(x, log_Reff, 'r' ,lw = 1.2, label= 'v. der Wel z = 1.25 ETG relation (not normalised)')
+#ax1.scatter(masses, np.log10(Rc), marker='o', s=20, c='r', edgecolors='k')
+ax2.set_xlabel(r'$\mathrm{log_{10}{(M*/M_{\odot})}}$', size = 12)
+ax2.set_ylabel(r'$\mathrm{log_{10}{(R_{e}/kpc)}}$', size = 12)
+plt.xticks(fontsize=10)
+plt.yticks(fontsize=10)
+plt.legend(prop={'size': 10})
+plt.title('3D-HST log10(Re) versus log10(M*/Msun)', size = 13)
+plt.xlim(10.3, 11.4)
+#plt.show()
+plt.savefig('Re_v_M*_cbar_Hdelta.pdf')
+plt.close()
+
+fig, (ax, ax3) = plt.subplots(1, 2, figsize=(14,6))
+im = ax.scatter(mass, np.log10(R_e), s=130, c=d4000_massi, cmap=plt.cm.magma, marker='o',linewidth=0.5, alpha = 0.9 )#edgecolors='black'
+cbar = fig.colorbar(im, ax=ax)
+cbar.set_label(r'$D_{n}4000$', size=12)
+ax.set_xlabel(r'$\mathrm{log_{10}{(M*/M_{\odot})}}$', size = 12)
+ax.set_ylabel(r'$\mathrm{log_{10}{(R_{e}/kpc)}}$', size = 12)
+ax.plot(x, vdw_norm_model, 'k', lw = 1., ls = '--', alpha = 0.5)
+ax.set_xlim(10.3, 11.3)
+ax.set_ylim(-0.4, 1.1)
+im3 = ax3.scatter(mass, np.log10(R_e), s=130, c=hdelta_massi, cmap=plt.cm.magma, marker='o',linewidth=0.5, alpha = 0.9 )
+cbar3 = fig.colorbar(im3, ax=ax3)
+cbar3.set_label(r'$EW(H\delta)$', size=12)
+ax3.plot(x, vdw_norm_model, 'k', lw = 1., ls = '--', alpha = 0.5)# label=f'v. der Wel z = 1.25 ETG relation normalised by f = {round((best_c_vdw-0.22),2)}')
+ax3.set_xlabel(r'$\mathrm{log_{10}{(M*/M_{\odot})}}$', size = 12)
+ax3.set_ylabel(r'$\mathrm{log_{10}{(R_{e}/kpc)}}$', size = 12)
+ax3.set_xlim(10.3, 11.3)
+ax3.set_ylim(-0.4, 1.1)
+plt.savefig("Re_v_M_cbar_both.pdf")
+plt.close()
+
+figure, (axs, axs1) = plt.subplots(1, 2, figsize=(14,6))
+ims = axs.scatter(mass, np.log10(R_e), s=130, c=redshifts, cmap=plt.cm.magma, marker='o',linewidth=0.5, alpha = 0.9 )#edgecolors='black'
+cbars = figure.colorbar(ims, ax=axs)
+cbars.set_label(r'Redshift ($z$)', size=12)
+axs.set_xlabel(r'$\mathrm{log_{10}{(M*/M_{\odot})}}$', size = 12)
+axs.set_ylabel(r'$\mathrm{log_{10}{(R_{e}/kpc)}}$', size = 12)
+axs.plot(x, vdw_norm_model, 'k', lw = 1., ls = '--', alpha = 0.5)
+axs.set_xlim(10.3, 11.3)
+axs.set_ylim(-0.4, 1.1)
+ims1 = axs1.scatter(mass, np.log10(R_e), s=130, c=ssfr_50, cmap=plt.cm.magma, marker='o',linewidth=0.5, alpha = 0.9 )
+cbars1 = fig.colorbar(ims1, ax=axs1)
+cbars1.set_label(r'sSFR', size=12)
+axs1.plot(x, vdw_norm_model, 'k', lw = 1., ls = '--', alpha = 0.5)# label=f'v. der Wel z = 1.25 ETG relation normalised by f = {round((best_c_vdw-0.22),2)}')
+axs1.set_xlabel(r'$\mathrm{log_{10}{(M*/M_{\odot})}}$', size = 12)
+axs1.set_ylabel(r'$\mathrm{log_{10}{(R_{e}/kpc)}}$', size = 12)
+axs1.set_xlim(10.3, 11.3)
+axs1.set_ylim(-0.4, 1.1)
+plt.savefig("Re_v_M_cbar_redshiftandssfr.pdf")
+plt.close()
+
+
+
+fig3, (ax4, ax5) = plt.subplots(1, 2, figsize=(14,6))
+im4 = ax4.scatter((np.log10(R_e)- np.median(np.log10(R_e))), hdelta_massi, s=130, c=d4000_massi, cmap=plt.cm.magma, marker='o',linewidth=0.5, alpha = 0.9 )#edgecolors='black'
+cbar4 = fig.colorbar(im4, ax=ax4)
+cbar4.set_label(r'$D_{n}4000$', size=12)
+#ax.set_xlabel(r'$\mathrm{log_{10}{(M*/M_{\odot})}}$', size = 12)
+ax4.set_xlabel(r'$\Delta \mathrm{log_{10}{(R_{e}/kpc)}}$', size = 12)
+ax4.set_ylabel(r'$EW(H\delta)$', size = 12)
+#ax4.plot(x, vdw_norm_model, 'k', lw = 1., ls = '--', alpha = 0.5)
+#ax4.set_xlim(10.3, 11.3)
+#ax4.set_ylim(-0.4, 1.1)
+im5 = ax5.scatter((np.log10(R_e)- np.median(np.log10(R_e))), d4000_massi, s=130, c=hdelta_massi, cmap=plt.cm.magma, marker='o',linewidth=0.5, alpha = 0.9 )#edgecolors='black'
+cbar5 = fig3.colorbar(im5, ax=ax5)
+cbar5.set_label(r'$EW(H\delta)$', size=12)
+#ax5.plot(x, vdw_norm_model, 'k', lw = 1., ls = '--', alpha = 0.5)# label=f'v. der Wel z = 1.25 ETG relation normalised by f = {round((best_c_vdw-0.22),2)}')
+#ax5.set_xlabel(r'$\mathrm{log_{10}{(M*/M_{\odot})}}$', size = 12)
+ax5.set_xlabel(r'$\Delta \mathrm{log_{10}{(R_{e}/kpc)}}$', size = 12)
+ax5.set_ylabel(r'$D_{n}4000$', size = 12)
+#ax5.set_xlim(10.3, 11.3)
+#ax5.set_ylim(-0.4, 1.1)
+plt.savefig("deltaRe_v_d4000andhdelta.pdf")
 plt.close()
 
 input()
@@ -299,7 +398,7 @@ def plot_stackssingle(stack, name, color):
     plt.close()
     #plt.show()
 
-plot_stackssingle(stacking_all, 'all_newHdeltaEW', 'r')
+#plot_stackssingle(stacking_all, 'all_newHdeltaEW', 'r')
 
 input()
 

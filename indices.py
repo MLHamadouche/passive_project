@@ -26,7 +26,7 @@ def Dn4000(fluxes):
 def C29_33(fluxes):
     c = 3*10**8
     F_nu = fluxes*(wavs**2)/c
-    #indices for the C(29-33) line for rest frame wavelenghts of spectra
+    #indices for the C(29-33) line for rest frame wavelengths of spectra
     mask_2900 = (wavs <= 3100) & (wavs >= 2700)
     flux_2900 = np.nanmean(F_nu[mask_2900])
     mask_3300 = (wavs <= 3500) & (wavs >= 3100)
@@ -34,7 +34,6 @@ def C29_33(fluxes):
 
     flux_ratio = flux_2900/flux_3300
     C_ind = -2.5*np.log10(flux_ratio)
-
 
     return C_ind
 

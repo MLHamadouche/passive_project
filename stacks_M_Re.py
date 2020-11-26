@@ -15,7 +15,7 @@ from astropy.cosmology import FlatLambdaCDM
 from astropy import units as u
 import scipy
 from stacking_code import stacks
-
+plt.rc('text', usetex=True)
 both_xray = Table.read('FirstProjectCatalogs/concat_possible_xray_matches_massi.fits').to_pandas()
 df1 = pd.DataFrame(both_xray)#, index = np.array(both_xray['FIELD'].str.decode("utf-8").str.rstrip()+ both_xray['ID_1'].astype(str).str.pad(6, side='left', fillchar='0') + both_xray['CAT'].str.decode("utf-8")))
 passive_cut = Table.read('FirstProjectCatalogs/x_match_final_passive_sample_edit.fits').to_pandas()
@@ -46,9 +46,9 @@ redshifts = concat_3dhst['zspec']
 
 mass = passive_cut["log10(M*)"]
 
-print(len(ssfr))
+#print(len(ssfr))
 
-input()
+#input()
 list_IDs = []
 ages = []
 masses = []
@@ -143,7 +143,7 @@ for cvals in range(len(c_model)):
         best_c = c_vals
         best_chi = chisq
 
-print(f'best_c {best_c} \n best_chi {best_chi}')
+#print(f'best_c {best_c} \n best_chi {best_chi}')
 
 cat2 = Table.read("Re_cat.fits").to_pandas()
 df2 = pd.DataFrame(cat2)
@@ -152,7 +152,7 @@ R_e = df2["Re_kpc"]
 R_e_errs = df2["Re_kpc_errs"]
 mass = df2["log10(M*/Msun)"]
 ssfr_50 = df2["SSFR"]
-print(len(df2))
+#print(len(df2))
 redshifts = df2['redshifts']
 alpha = 0.76
 log_A = 0.22
@@ -184,8 +184,8 @@ for cvals2 in range(len(log_A_model)):
         best_chi_vdw = chisq2
         best_c_vdw = c_vals2
 
-print(f'best_c_vdw: {best_c_vdw} \n best_chi_vdw: {best_chi_vdw}')
-print(vdw_model)
+#print(f'best_c_vdw: {best_c_vdw} \n best_chi_vdw: {best_chi_vdw}')
+#print(vdw_model)
 
 vdw_norm_model = vdw_relation(best_c_vdw, 0.76, x)
 
@@ -218,7 +218,7 @@ plt.legend(prop={'size': 10})
 plt.title('3D-HST log10(Re) versus log10(M*/Msun)', size = 13)
 plt.xlim(10.3, 11.4)
 #plt.show()
-plt.savefig('Re_v_M*_test_with_Arjens_relationandbestfit_TEST.pdf')
+#plt.savefig('Re_v_M*_test_with_Arjens_relationandbestfit_TEST.pdf')
 plt.close()
 
 
@@ -245,7 +245,7 @@ plt.legend(prop={'size': 10})
 plt.title('3D-HST log10(Re) versus log10(M*/Msun)', size = 13)
 plt.xlim(10.3, 11.4)
 #plt.show()
-plt.savefig('Re_v_M*_cbar_Hdelta.pdf')
+#plt.savefig('Re_v_M*_cbar_Hdelta.pdf')
 plt.close()
 
 fig, (ax, ax3) = plt.subplots(1, 2, figsize=(14,6))
@@ -265,7 +265,7 @@ ax3.set_xlabel(r'$\mathrm{log_{10}{(M*/M_{\odot})}}$', size = 12)
 ax3.set_ylabel(r'$\mathrm{log_{10}{(R_{e}/kpc)}}$', size = 12)
 ax3.set_xlim(10.3, 11.3)
 ax3.set_ylim(-0.4, 1.1)
-plt.savefig("Re_v_M_cbar_both.pdf")
+#plt.savefig("Re_v_M_cbar_both.pdf")
 plt.close()
 
 figure, (axs, axs1) = plt.subplots(1, 2, figsize=(14,6))
@@ -285,7 +285,7 @@ axs1.set_xlabel(r'$\mathrm{log_{10}{(M*/M_{\odot})}}$', size = 12)
 axs1.set_ylabel(r'$\mathrm{log_{10}{(R_{e}/kpc)}}$', size = 12)
 axs1.set_xlim(10.3, 11.3)
 axs1.set_ylim(-0.4, 1.1)
-plt.savefig("Re_v_M_cbar_redshiftandssfr.pdf")
+#plt.savefig("Re_v_M_cbar_redshiftandssfr.pdf")
 plt.close()
 
 
@@ -309,10 +309,10 @@ ax5.set_xlabel(r'$\Delta \mathrm{log_{10}{(R_{e}/kpc)}}$', size = 12)
 ax5.set_ylabel(r'$D_{n}4000$', size = 12)
 #ax5.set_xlim(10.3, 11.3)
 #ax5.set_ylim(-0.4, 1.1)
-plt.savefig("deltaRe_v_d4000andhdelta.pdf")
+#plt.savefig("deltaRe_v_d4000andhdelta.pdf")
 plt.close()
 
-input()
+
 #cat = Table.read('TEST_CAT.fits').to_pandas()
 cat = Table.read("Re_cat.fits").to_pandas()
 df = pd.DataFrame(cat)
@@ -381,10 +381,340 @@ new_wavs = np.arange(2400, 4200, 1.25)
 #    IDs_above.append(df.loc[(np.log10(R_c)[mask]==i),'IDs'].values.tolist())
 
 #print(len(IDs_above), len(IDs_below))
+from x_ray_check import stacks
 
-stacking_all = stacks(all_IDs)
-#stacking_above = stacks(IDs_above)
+stacking_all ,colour_index, D4000_index, Mg_UV_index, H_delta_EW, ages, masses = stacks(all_IDs)
+print(len(all_IDs))
+input()
 
+data_indices = {'C(29-33)': colour_index, 'Mg_UV': Mg_UV_index, 'H_delta_EW': H_delta_EW, 'D4000': D4000_index, 'ages': ages, 'masses':masses}
+df_new = pd.DataFrame(data_indices, columns = ['C(29-33)', 'Mg_UV', 'H_delta_EW', 'D4000', 'ages', 'masses'])
+D4000_ind= df_new['D4000']
+H_delta_EW_ind = df_new['H_delta_EW']
+ages = df_new['ages']
+mass = df_new['masses']
+colour_ind = df_new['C(29-33)']
+mgUV_ind = df_new['Mg_UV']
+
+
+#data_indices = {'C(29-33)': colour_index, 'Mg_UV': Mg_UV_index, 'H_delta_EW': H_delta_EW, 'D4000': D4000_index, 'ages': ages, 'masses':masses}
+df_new1 = pd.DataFrame(data_indices, columns = ['C(29-33)', 'Mg_UV', 'H_delta_EW', 'D4000', 'ages', 'masses'])
+df_new1 = df_new1.groupby((df_new1['masses']>10.5) & (df_new1['masses']<=10.75)).get_group(True)
+
+D4000_ind1= df_new1['D4000']
+H_delta_EW_ind1 = df_new1['H_delta_EW']
+ages1 = df_new1['ages']
+mass1 = df_new1['masses']
+colour_ind1 = df_new1['C(29-33)']
+mgUV_ind1 = df_new1['Mg_UV']
+
+df_new2 = pd.DataFrame(data_indices, columns = ['C(29-33)', 'Mg_UV', 'H_delta_EW', 'D4000', 'ages', 'masses'])
+df_new2 = df_new2.groupby((df_new2['masses']>10.75) & (df_new2['masses']<=11.0)).get_group(True)
+D4000_ind2= df_new2['D4000']
+H_delta_EW_ind2 = df_new2['H_delta_EW']
+ages2 = df_new2['ages']
+mass2 = df_new2['masses']
+colour_ind2 = df_new2['C(29-33)']
+mgUV_ind2 = df_new2['Mg_UV']
+
+df_new3 = pd.DataFrame(data_indices, columns = ['C(29-33)', 'Mg_UV', 'H_delta_EW', 'D4000', 'ages', 'masses'])
+df_new3 = df_new3.groupby((df_new3['masses']>11.0) & (df_new3['masses']<=11.3)).get_group(True)
+D4000_ind3= df_new3['D4000']
+H_delta_EW_ind3 = df_new3['H_delta_EW']
+ages3 = df_new3['ages']
+mass3 = df_new3['masses']
+colour_ind3 = df_new3['C(29-33)']
+mgUV_ind3 = df_new3['Mg_UV']
+
+
+av_mg1, av_d40001, av_hdelta1, av_colour1 = np.nanmedian(mgUV_ind1), np.nanmedian(D4000_ind1), np.nanmedian(H_delta_EW_ind1),np.nanmedian(colour_ind1)
+#print(f'For 11.0 <log10(M*) <=11.3: \n MgUV = {av_mg_all_1} \n D4000 = {av_d4000_all_1} \n EW(Hdelta) = {av_hdelta_all_1} \n C29-33 = {av_colour_all_1}')
+av_mg2, av_d40002, av_hdelta2, av_colour2 = np.nanmedian(mgUV_ind2), np.nanmedian(D4000_ind2), np.nanmedian(H_delta_EW_ind2),np.nanmedian(colour_ind2)
+#print(f'For 11.0 <log10(M*) <=11.3: \n MgUV = {av_mg_all_1} \n D4000 = {av_d4000_all_1} \n EW(Hdelta) = {av_hdelta_all_1} \n C29-33 = {av_colour_all_1}')
+
+av_mg3, av_d40003, av_hdelta3, av_colour3 = np.nanmedian(mgUV_ind3), np.nanmedian(D4000_ind3), np.nanmedian(H_delta_EW_ind3),np.nanmedian(colour_ind3)
+#print(f'For 11.0 <log10(M*) <=11.3: \n MgUV = {av_mg_all_1} \n D4000 = {av_d4000_all_1} \n EW(Hdelta) = {av_hdelta_all_1} \n C29-33 = {av_colour_all_1}')
+
+
+from matplotlib.legend_handler import HandlerLine2D, HandlerTuple
+figtree, axtree = plt.subplots(figsize=[12,8.5])
+imtree = axtree.scatter(D4000_ind, H_delta_EW_ind, s=200, c=ages, cmap=plt.cm.magma, marker='o',linewidth=0.5)
+#print(len(D4000_ind_all))
+#ax2.scatter(D4000_index, H_delta_EW, marker='o',color = 'k',zorder = 1)
+cbartree = figtree.colorbar(imtree, ax=axtree)
+#cbartree.set_label(r'log$_{10}$(M*/M$_{\odot}$)', size=12)
+cbartree.set_label(r'Age (Gyr)', size=12)
+#im1 = axtree.scatter(av_d40001, av_hdelta1, s=200, c=ages[ages1], cmap=plt.cm.magma, marker='*',linewidth=0.5, edgecolors = 'k', label = '10.5 - 10.75')
+#im2 = axtree.scatter(av_d40002, av_hdelta2, s=200, c=ages[ages2], cmap=plt.cm.magma, marker='d',linewidth=0.5, edgecolors = 'k', label = '10.75 - 11.0')
+#im3 = axtree.scatter(av_d40003, av_hdelta3, s=200, c=ages[ages3], cmap=plt.cm.magma, marker='^',linewidth=0.5, edgecolors = 'k', label = '11.0 - 11.3')
+s1 = axtree.scatter(av_d40001, av_hdelta1, marker = '*', color = 'teal', s=300, zorder = 2, edgecolors = 'k', label = '10.5 - 10.75')
+s2 = axtree.scatter(av_d40001, av_hdelta2, marker = 'd', color = 'teal', s=250, zorder = 2, edgecolors = 'k', label = '10.75 - 11.0')
+s3 = axtree.scatter(av_d40002, av_hdelta3, marker = '^', color = 'teal', s=250, zorder = 2, edgecolors = 'k', label = '11.0 - 11.3')
+axtree.set_xlabel("D$_{n}$4000", size=13)
+axtree.set_ylabel("EW(H$\delta$)", size=13)
+plt.legend()
+plt.savefig('NO_SIZE_corrected_hdeltad4000cbar_medianmassbinned_agecbar_only78.pdf')
+plt.close()
+
+input()
+
+stacking_above, colour_index_above, D4000_index_above, Mg_UV_index_above, H_delta_EW_above, ages_above, masses_above = stacks(IDs_above)
+data_indices_above = {'C(29-33)': colour_index_above, 'Mg_UV': Mg_UV_index_above, 'H_delta_EW': H_delta_EW_above, 'D4000': D4000_index_above, 'ages': ages_above, 'masses':masses_above}
+df_over = pd.DataFrame(data_indices_above, columns = ['C(29-33)', 'Mg_UV', 'H_delta_EW', 'D4000', 'ages', 'masses'])
+df_over = df_over.groupby(df_over['masses']<=10.5).get_group(True)
+D4000_above = df_over['D4000']
+H_delta_EW_above = df_over['H_delta_EW']
+ages_above = df_over['ages']
+masses_over = df_over['masses']
+colour_index_o = df_over['C(29-33)']
+mgUV_over = df_over['Mg_UV']
+
+av_mg_1, av_d4000_1, av_hdelta_1, av_colour_1 = np.nanmedian(mgUV_over), np.nanmedian(D4000_above), np.nanmedian(H_delta_EW_above),np.nanmedian(colour_index_o)
+print(f'For 10.4 <=log10(M*) <=10.5: \n MgUV = {av_mg_1} \n D4000 = {av_d4000_1} \n EW(Hdelta) = {av_hdelta_1} \n C29-33 = {av_colour_1}')
+
+
+df_2 = pd.DataFrame(data_indices_above, columns = ['C(29-33)', 'Mg_UV', 'H_delta_EW', 'D4000', 'ages', 'masses'])
+df_2 = df_2.groupby((df_2['masses']>10.5) & (df_2['masses']<=10.75)).get_group(True)
+D4000_2 = df_2['D4000']
+H_delta_EW_2 = df_2['H_delta_EW']
+ages_2 = df_2['ages']
+masses_2 = df_2['masses']
+colour_index_2 = df_2['C(29-33)']
+mgUV_2 = df_2['Mg_UV']
+av_mg_2, av_d4000_2, av_hdelta_2, av_colour_2 = np.nanmedian(mgUV_2), np.nanmedian(D4000_2), np.nanmedian(H_delta_EW_2),np.nanmedian(colour_index_2)
+print(f'For 10.5 <=log10(M*) <=10.75: \n MgUV = {av_mg_2} \n D4000 = {av_d4000_2} \n EW(Hdelta) = {av_hdelta_2} \n C29-33 = {av_colour_2}')
+
+
+df_3 = pd.DataFrame(data_indices_above, columns = ['C(29-33)', 'Mg_UV', 'H_delta_EW', 'D4000', 'ages', 'masses'])
+df_3 = df_3.groupby((df_3['masses']>10.75) & (df_3['masses']<=11.0)).get_group(True)
+D4000_3 = df_3['D4000']
+H_delta_EW_3 = df_3['H_delta_EW']
+ages_3 = df_3['ages']
+masses_3= df_3['masses']
+colour_index_3 = df_3['C(29-33)']
+mgUV_3 = df_3['Mg_UV']
+
+av_mg_3, av_d4000_3, av_hdelta_3, av_colour_3 = np.nanmedian(mgUV_3), np.nanmedian(D4000_3), np.nanmedian(H_delta_EW_3),np.nanmedian(colour_index_3)
+print(f'For 10.75 <log10(M*) <=11.0: \n MgUV = {av_mg_3} \n D4000 = {av_d4000_3} \n EW(Hdelta) = {av_hdelta_3} \n C29-33 = {av_colour_3}')
+
+
+
+df_4 = pd.DataFrame(data_indices_above, columns = ['C(29-33)', 'Mg_UV', 'H_delta_EW', 'D4000', 'ages', 'masses'])
+df_4 = df_4.groupby((df_4['masses']>11.0) & (df_4['masses']<=11.3)).get_group(True)
+
+D4000_4 = df_4['D4000']
+H_delta_EW_4 = df_4['H_delta_EW']
+ages_4 = df_4['ages']
+masses_4= df_4['masses']
+colour_index_4 = df_4['C(29-33)']
+mgUV_4 = df_4['Mg_UV']
+
+av_mg_4, av_d4000_4, av_hdelta_4, av_colour_4 = np.nanmedian(mgUV_4), np.nanmedian(D4000_4), np.nanmedian(H_delta_EW_4),np.nanmedian(colour_index_4)
+print(f'For 11.0 <log10(M*) <=11.3: \n MgUV = {av_mg_4} \n D4000 = {av_d4000_4} \n EW(Hdelta) = {av_hdelta_4} \n C29-33 = {av_colour_4}')
+
+print(len(df_over), len(df_2), len(df_3), len(df_4))
+
+stacking_below, colour_index_below, D4000_index_below, Mg_UV_index_below, H_delta_EW_below, ages_below, masses_below = stacks(IDs_below)
+
+data_indices_below = {'C(29-33)': colour_index_below, 'Mg_UV': Mg_UV_index_below, 'H_delta_EW': H_delta_EW_below, 'D4000': D4000_index_below, 'ages': ages_below, 'masses':masses_below}
+df_bel = pd.DataFrame(data_indices_below, columns = ['C(29-33)', 'Mg_UV', 'H_delta_EW', 'D4000', 'ages', 'masses'])
+D4000_ind_bel= df_bel['D4000']
+H_delta_EW_ind_bel = df_bel['H_delta_EW']
+ages_bel = df_bel['ages']
+mass_bel = df_bel['masses']
+colour_ind_bel = df_bel['C(29-33)']
+mgUV_ind_bel = df_bel['Mg_UV']
+"""
+df_over_bel = pd.DataFrame(data_indices_below, columns = ['C(29-33)', 'Mg_UV', 'H_delta_EW', 'D4000', 'ages', 'masses'])
+df_over_bel = df_over_bel.groupby(df_over_bel['masses']<=10.5).get_group(True)
+D4000_above_bel = df_over_bel['D4000']
+H_delta_EW_above_bel = df_over_bel['H_delta_EW']
+ages_above_bel = df_over_bel['ages']
+masses_over_bel = df_over_bel['masses']
+colour_index_o_bel = df_over_bel['C(29-33)']
+mgUV_over_bel = df_over_bel['Mg_UV']
+"""
+#av_mg_1_bel, av_d4000_1_bel, av_hdelta_1_bel, av_colour_1_bel = np.nanmedian(mgUV_over_bel), np.nanmedian(D4000_above_bel), np.nanmedian(H_delta_EW_above_bel),np.nanmedian(colour_index_o_bel)
+#print(f'For 10.4 <=log10(M*) <=10.5: \n MgUV = {av_mg_1_bel} \n D4000 = {av_d4000_1_bel} \n EW(Hdelta) = {av_hdelta_1_bel} \n C29-33 = {av_colour_1_bel}')
+
+
+df_2_bel = pd.DataFrame(data_indices_below, columns = ['C(29-33)', 'Mg_UV', 'H_delta_EW', 'D4000', 'ages', 'masses'])
+df_2_bel = df_2_bel.groupby((df_2_bel['masses']>10.5) & (df_2_bel['masses']<=10.75)).get_group(True)
+D4000_2_bel = df_2_bel['D4000']
+H_delta_EW_2_bel = df_2_bel['H_delta_EW']
+ages_2_bel = df_2_bel['ages']
+masses_2_bel = df_2_bel['masses']
+colour_index_2_bel = df_2_bel['C(29-33)']
+mgUV_2_bel = df_2_bel['Mg_UV']
+av_mg_2_bel, av_d4000_2_bel, av_hdelta_2_bel, av_colour_2_bel = np.nanmedian(mgUV_2_bel), np.nanmedian(D4000_2_bel), np.nanmedian(H_delta_EW_2_bel),np.nanmedian(colour_index_2_bel)
+print(f'For 10.5 <=log10(M*) <=10.75: \n MgUV = {av_mg_2_bel} \n D4000 = {av_d4000_2_bel} \n EW(Hdelta) = {av_hdelta_2_bel} \n C29-33 = {av_colour_2_bel}')
+
+
+df_3_bel = pd.DataFrame(data_indices_below, columns = ['C(29-33)', 'Mg_UV', 'H_delta_EW', 'D4000', 'ages', 'masses'])
+df_3_bel = df_3_bel.groupby((df_3_bel['masses']>10.75) & (df_3_bel['masses']<=11.0)).get_group(True)
+D4000_3_bel = df_3_bel['D4000']
+H_delta_EW_3_bel = df_3_bel['H_delta_EW']
+ages_3_bel = df_3_bel['ages']
+masses_3_bel= df_3_bel['masses']
+colour_index_3_bel = df_3_bel['C(29-33)']
+mgUV_3_bel = df_3_bel['Mg_UV']
+
+av_mg_3_bel, av_d4000_3_bel, av_hdelta_3_bel, av_colour_3_bel = np.nanmedian(mgUV_3_bel), np.nanmedian(D4000_3_bel), np.nanmedian(H_delta_EW_3_bel),np.nanmedian(colour_index_3_bel)
+print(f'For 10.75 <log10(M*) <=11.0: \n MgUV = {av_mg_3_bel} \n D4000 = {av_d4000_3_bel} \n EW(Hdelta) = {av_hdelta_3_bel} \n C29-33 = {av_colour_3_bel}')
+
+
+
+df_4_bel = pd.DataFrame(data_indices_below, columns = ['C(29-33)', 'Mg_UV', 'H_delta_EW', 'D4000', 'ages', 'masses'])
+df_4_bel = df_4_bel.groupby((df_4_bel['masses']>11.0) & (df_4_bel['masses']<=11.3)).get_group(True)
+
+D4000_4_bel = df_4_bel['D4000']
+H_delta_EW_4_bel = df_4_bel['H_delta_EW']
+ages_4_bel = df_4_bel['ages']
+masses_4_bel= df_4_bel['masses']
+colour_index_4_bel = df_4_bel['C(29-33)']
+mgUV_4_bel = df_4_bel['Mg_UV']
+
+av_mg_4_bel, av_d4000_4_bel, av_hdelta_4_bel, av_colour_4_bel = np.nanmedian(mgUV_4_bel), np.nanmedian(D4000_4_bel), np.nanmedian(H_delta_EW_4_bel),np.nanmedian(colour_index_4_bel)
+print(f'For 11.0 <log10(M*) <=11.3: \n MgUV = {av_mg_4_bel} \n D4000 = {av_d4000_4_bel} \n EW(Hdelta) = {av_hdelta_4_bel} \n C29-33 = {av_colour_4_bel}')
+
+
+
+plt.rc('font', family='serif')
+plt.rc('xtick', labelsize='x-small')
+plt.rc('ytick', labelsize='x-small')
+"""
+fig1, ax1 = plt.subplots(figsize=[12,8.5])
+#im1 = ax1.scatter(D4000_index, H_delta_EW, s=130, c=new_redshifts, cmap=plt.cm.magma, marker='o', edgecolors='black',linewidth=0.5 )
+#ax1.errorbar(colour_index, Mg_UV_index ,marker='s',xerr = 0.1*np.ones(len(colour_index))*colour_index, yerr = 0.1*np.ones(len(Mg_UV_index))*Mg_UV_index, ecolor='k', color ='k', linestyle =" ", elinewidth = 0.4, capsize = 4, mew = 0.3, zorder = 1)
+#cbar = fig1.colorbar(im1, ax=ax1)
+ax1.scatter(colour_index, Mg_UV_index ,marker='o',color = 'k',zorder = 1)
+#cbar.set_label(r'Redshift, z', size=12)
+ax1.scatter([df['C(29-33)'][0],df['C(29-33)'][2],df['C(29-33)'][4]],[df['Mg_UV'][0],df['Mg_UV'][2],df['Mg_UV'][4]], marker = '*', color = 'r', s=350, zorder = 2, edgecolors = 'k', label = 'above relation')
+ax1.scatter([df['C(29-33)'][1],df['C(29-33)'][3],df['C(29-33)'][5]],[df['Mg_UV'][1],df['Mg_UV'][3],df['Mg_UV'][5]], marker = '*', color = 'g', s=350, zorder = 2, edgecolors = 'k', label = 'below relation')
+ax1.set_ylim(0.8, 2.3)
+ax1.set_xlim(0.2, 1.2)
+#ax1.scatter(colour_index, Mg_UV_index)
+ax1.set_xlabel("C(29-33)", size=13)
+ax1.set_ylabel("MgUV", size=13)
+#plt.title('', size =14)# excluding possible AGN (CDFS + UDS)')
+plt.legend()
+plt.savefig('massi_colurvmgUV_blackcircles_plusstacks.pdf')
+plt.close()
+"""
+
+both_xray = Table.read('FirstProjectCatalogs/concat_possible_xray_matches_massi.fits').to_pandas()
+
+dfx = pd.DataFrame(both_xray)#, index = np.array(both_xray['FIELD'].str.decode("utf-8").str.rstrip()+ both_xray['ID_1'].astype(str).str.pad(6, side='left', fillchar='0') + both_xray['CAT'].str.decode("utf-8")))
+
+passive_cut = Table.read('FirstProjectCatalogs/x_match_final_passive_sample_edit.fits').to_pandas()
+
+dfp = pd.DataFrame(passive_cut)#, index = np.array(passive_cut['FIELD'].str.decode("utf-8").str.rstrip() + passive_cut['ID_1'].astype(str).str.pad(6, side='left', fillchar='0')+ passive_cut['CAT'].str.decode("utf-8")) )
+
+new_df=pd.concat([dfx,dfp]).drop_duplicates(subset = 'ID_1', keep=False)
+
+ID_list = new_df.set_index(new_df['FIELD'].str.decode("utf-8").str.rstrip() + new_df['ID_1'].astype(str).str.pad(6, side='left', fillchar='0') + new_df['CAT'].str.decode("utf-8"))
+
+IDs_vals = ID_list.index.values
+stack_all_all, colour_index_all, D4000_index_all, Mg_UV_index_all, H_delta_EW_all, ages_all, masses_all = stacks(IDs_vals)
+print(len(IDs_vals))
+
+data_indices_all = {'C(29-33)': colour_index_all, 'Mg_UV': Mg_UV_index_all, 'H_delta_EW': H_delta_EW_all, 'D4000': D4000_index_all, 'ages': ages_all, 'masses':masses_all}
+df_xp = pd.DataFrame(data_indices_all, columns = ['C(29-33)', 'Mg_UV', 'H_delta_EW', 'D4000', 'ages', 'masses'])
+
+D4000_ind_all= df_xp['D4000']
+H_delta_EW_ind_all = df_xp['H_delta_EW']
+ages_all = df_xp['ages']
+mass_all = df_xp['masses']
+colour_ind_all = df_xp['C(29-33)']
+mgUV_ind_all = df_xp['Mg_UV']
+print(len(D4000_ind_all))
+
+df_xp = df_xp.groupby((df_xp['masses']>10.4) & (df_xp['masses']<=10.5)).get_group(True)
+
+D4000_ind_all1= df_xp['D4000']
+H_delta_EW_ind_all1 = df_xp['H_delta_EW']
+ages_all1 = df_xp['ages']
+mass_all1 = df_xp['masses']
+colour_ind_all1 = df_xp['C(29-33)']
+mgUV_ind_all1 = df_xp['Mg_UV']
+print(len(D4000_ind_all1))
+
+
+df_xp3 = pd.DataFrame(data_indices_all, columns = ['C(29-33)', 'Mg_UV', 'H_delta_EW', 'D4000', 'ages', 'masses'])
+df_xp3 = df_xp3.groupby((df_xp3['masses']>10.5) & (df_xp3['masses']<=10.75)).get_group(True)
+D4000_ind_all3= df_xp3['D4000']
+H_delta_EW_ind_all3 = df_xp['H_delta_EW']
+ages_all3 = df_xp3['ages']
+mass_all3 = df_xp3['masses']
+colour_ind_all3 = df_xp3['C(29-33)']
+mgUV_ind_all3 = df_xp3['Mg_UV']
+print(len(D4000_ind_all3))
+
+df_xp4 = pd.DataFrame(data_indices_all, columns = ['C(29-33)', 'Mg_UV', 'H_delta_EW', 'D4000', 'ages', 'masses'])
+df_xp4 = df_xp4.groupby((df_xp4['masses']>10.75) & (df_xp4['masses']<=11.0)).get_group(True)
+D4000_ind_all4= df_xp4['D4000']
+H_delta_EW_ind_all4 = df_xp4['H_delta_EW']
+ages_all4 = df_xp4['ages']
+mass_all4 = df_xp4['masses']
+colour_ind_all4 = df_xp4['C(29-33)']
+mgUV_ind_all4 = df_xp4['Mg_UV']
+print(len(D4000_ind_all4))
+
+df_xp5 = pd.DataFrame(data_indices_all, columns = ['C(29-33)', 'Mg_UV', 'H_delta_EW', 'D4000', 'ages', 'masses'])
+df_xp5 = df_xp5.groupby((df_xp5['masses']>11.0) & (df_xp5['masses']<=11.3)).get_group(True)
+D4000_ind_all5= df_xp5['D4000']
+H_delta_EW_ind_all5 = df_xp5['H_delta_EW']
+ages_all5 = df_xp5['ages']
+mass_all5 = df_xp5['masses']
+colour_ind_all5 = df_xp5['C(29-33)']
+mgUV_ind_all5 = df_xp5['Mg_UV']
+print(len(D4000_ind_all5))
+
+av_mg_all_1, av_d4000_all_1, av_hdelta_all_1, av_colour_all_1 = np.nanmedian(mgUV_ind_all1), np.nanmedian(D4000_ind_all1), np.nanmedian(H_delta_EW_ind_all1),np.nanmedian(colour_ind_all1)
+#print(f'For 11.0 <log10(M*) <=11.3: \n MgUV = {av_mg_all_1} \n D4000 = {av_d4000_all_1} \n EW(Hdelta) = {av_hdelta_all_1} \n C29-33 = {av_colour_all_1}')
+av_mg_all_2, av_d4000_all_2, av_hdelta_all_2, av_colour_all_2 = np.nanmedian(mgUV_ind_all3), np.nanmedian(D4000_ind_all3), np.nanmedian(H_delta_EW_ind_all3),np.nanmedian(colour_ind_all3)
+#print(f'For 11.0 <log10(M*) <=11.3: \n MgUV = {av_mg_all_1} \n D4000 = {av_d4000_all_1} \n EW(Hdelta) = {av_hdelta_all_1} \n C29-33 = {av_colour_all_1}')
+
+av_mg_all_3, av_d4000_all_3, av_hdelta_all_3, av_colour_all_3 = np.nanmedian(mgUV_ind_all4), np.nanmedian(D4000_ind_all4), np.nanmedian(H_delta_EW_ind_all4),np.nanmedian(colour_ind_all4)
+#print(f'For 11.0 <log10(M*) <=11.3: \n MgUV = {av_mg_all_1} \n D4000 = {av_d4000_all_1} \n EW(Hdelta) = {av_hdelta_all_1} \n C29-33 = {av_colour_all_1}')
+
+av_mg_all_4, av_d4000_all_4, av_hdelta_all_4, av_colour_all_4 = np.nanmedian(mgUV_ind_all5), np.nanmedian(D4000_ind_all5), np.nanmedian(H_delta_EW_ind_all5),np.nanmedian(colour_ind_all5)
+#print(f'For 11.0 <log10(M*) <=11.3: \n MgUV = {av_mg_all_1} \n D4000 = {av_d4000_all_1} \n EW(Hdelta) = {av_hdelta_all_1} \n C29-33 = {av_colour_all_1}')
+
+
+from matplotlib.legend_handler import HandlerLine2D, HandlerTuple
+figtree2, axtree2 = plt.subplots(figsize=[12,8.5])
+imtree2 = axtree2.scatter(D4000_ind, H_delta_EW_ind, s=200, c=ages, cmap=plt.cm.magma, marker='o',linewidth=0.5)
+#imtree2 = axtree2.scatter(D4000_ind_all, H_delta_EW_ind_all, s=200, c=ages_all, cmap=plt.cm.magma, marker='o',linewidth=0.5)
+#print(len(D4000_ind_all))
+#ax2.scatter(D4000_index, H_delta_EW, marker='o',color = 'k',zorder = 1)
+cbartree = figtree2.colorbar(imtree2, ax=axtree2)
+#cbartree.set_label(r'log$_{10}$(M*/M$_{\odot}$)', size=12)
+cbartree.set_label(r'Age (Gyr)', size=12)
+#f1 = ax2.scatter(av_d4000_1, av_hdelta_1, marker = '*', color = 'r', s=300, zorder = 2, edgecolors = 'k',) #label = '10.5 - 10.75')
+f2 = axtree2.scatter(av_d4000_2, av_hdelta_2, marker = '*', color = 'grey', s=250, zorder = 2, edgecolors = 'k') #label = '10.75 - 11.0')
+f3 = axtree2.scatter(av_d4000_3, av_hdelta_3, marker = 'd', color = 'grey', s=250, zorder = 2,edgecolors = 'k' ) #label = '11.0 - 11.3')
+f4 = axtree2.scatter(av_d4000_4, av_hdelta_4, marker = '^', color = 'grey', s=250, zorder = 2,edgecolors = 'k')
+#s1 = axtree2.scatter(av_d4000_all_1, av_hdelta_all_1, marker = 'o', color = 'teal', s=300, zorder = 2, edgecolors = 'k', label = '10.4 - 10.5')
+s2 = axtree2.scatter(av_d4000_2_bel, av_hdelta_2_bel, marker = '*', color = 'teal', s=250, zorder = 2, edgecolors = 'k', label = '10.5 - 10.75')
+s3 = axtree2.scatter(av_d4000_3_bel, av_hdelta_3_bel, marker = 'd', color = 'teal', s=250, zorder = 2, edgecolors = 'k', label = '10.75 - 11.0')
+s4 = axtree2.scatter(av_d4000_4_bel, av_hdelta_4_bel, marker = '^', color = 'teal', s=250, zorder = 2,edgecolors = 'k',label = '11.0 - 11.3')
+
+axtree2.set_xlabel("D$_{n}$4000", size=13)
+axtree2.set_ylabel("EW(H$\delta$)", size=13)
+first_legend = plt.legend([s2, s3, s4], ['10.5 - 10.75', '10.75 - 11.0','11.0 - 11.3'], loc = 'lower right')
+axtree2 = plt.gca().add_artist(first_legend)
+import matplotlib.patches as mpatches
+red_patch = mpatches.Patch(color='grey', label='Above A. van der Wel., 2014 \n (normalised) M* v R$_{e}$ relation')
+green_patch = mpatches.Patch(color='teal', label='Below A. van der Wel., 2014 \n (normalised) M* v R$_{e}$ relation')
+plt.legend(handles=[red_patch, green_patch], loc = 'upper right')
+#plt.legend()
+plt.savefig('SIZE_corrected_hdeltad4000cbar_medianmassbinned_agecbar78.pdf')
+plt.close()
+
+print("END")
+
+input()
 
 def plot_stackssingle(stack, name, color):
     plt.figure(figsize=(20,8))
@@ -400,11 +730,9 @@ def plot_stackssingle(stack, name, color):
 
 #plot_stackssingle(stacking_all, 'all_newHdeltaEW', 'r')
 
-input()
-
 #stacking_below = stacks(IDs_below)
 from indices import C29_33, Dn4000, Mg_UV, H_delta
-
+from stacking_code import stacks
 
 def plot_stacks(stack1, stack2):
     plt.figure(figsize=(20,8))
@@ -423,18 +751,6 @@ def plot_stacks(stack1, stack2):
 
 #plot_stacks(stacking_above, stacking_below)
 
-"""
-
-if np.greater(size,np.array(0.56*x + np.ones(95)*(best_c)))==True:
-    #it's on the left, above the line
-    IDs_above.append(df.loc[np.log10(df['R_c_size']) == round(s,8),'IDs'].values.tolist())
-
-if np.less(size,np.array(0.56*x + np.ones(95)*(best_c)))==True:
-    #it's on the right, below the line
-    IDs_below.append(df.loc[np.log10(df['R_c_size']) == round(s,8),'IDs'].values.tolist()) #.str.decode("utf-8").str.rstrip()
-"""
-#print(f'IDs_above {IDs_above}')
-#print(f'IDs_below {IDs_below}')
 
 new_wavs = np.arange(2400, 4200, 1.25)
 low_lim, upp_lim = 10.75, 11.0

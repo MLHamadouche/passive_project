@@ -352,7 +352,7 @@ for xray in agn:
 
 all_IDs_strict_UVJ = new_ID1 + new_ID2 +new_ID3 + new_ID4
 
-med_spec_units, colour_index, D4000_index, Mg_UV_index, H_delta_EW, ages, masses, IDplz = stacks(all_IDs_strict_UVJ)
+#med_spec_units, colour_index, D4000_index, Mg_UV_index, H_delta_EW, ages, masses, IDplz = stacks(all_IDs_strict_UVJ)
 
 data_indices = {'C(29-33)': colour_index, 'Mg_UV': Mg_UV_index, 'H_delta_EW': H_delta_EW, 'D4000': D4000_index, 'ages': ages, 'masses':masses, 'ID': IDplz}
 df_over = pd.DataFrame(data_indices, columns = ['C(29-33)', 'Mg_UV', 'H_delta_EW', 'D4000', 'ages', 'masses', 'ID'])
@@ -365,7 +365,7 @@ df_over = df_over.groupby((df_over['D4000'] > 1.35)).get_group(True)
 ID_less_than_135 = df_less['ID'].values
 ID_more_than_135 = df_over['ID'].values
 
-print('IDS for less and more D4000 = 1.35', ID_less_than_135, ID_more_than_135)
+#print('IDS for less and more D4000 = 1.35', ID_less_than_135, ID_more_than_135)
 #ages = df_over['ages']
 #D4000_above = df_over['D4000']
 #H_delta_EW_above = df_over['H_delta_EW']
@@ -401,9 +401,9 @@ for ID in IDs_all_stacks:
         IDs_not_strict.append(ID)
 
 
-print(len(IDs_not_strict))
+#print(len(IDs_not_strict))
 
-input()
+#input()
 
 med_spec_units_not, colour_index_not, D4000_index_not, Mg_UV_index_not, H_delta_EW_not, ages_not, masses_not, Idplzwhy = stacks(IDs_not_strict)
 data_indices_not = {'C(29-33)': colour_index_not, 'Mg_UV': Mg_UV_index_not, 'H_delta_EW': H_delta_EW_not, 'D4000': D4000_index_not, 'ages': ages_not, 'masses':masses_not, "ID":Idplzwhy}
@@ -453,9 +453,9 @@ age_bin4 = []
 for ID4 in new_ID4:
     age_bin4.append(IDs.loc[ID4, "mass_weighted_age_50"])
 
-print(np.median(age_bin1), np.median(age_bin2), np.median(age_bin3), np.median(age_bin4))
+#print(np.median(age_bin1), np.median(age_bin2), np.median(age_bin3), np.median(age_bin4))
 
-print(len(new_ID1), len(new_ID2), len(new_ID3), len(new_ID4))
+#print(len(new_ID1), len(new_ID2), len(new_ID3), len(new_ID4))
 
 
 

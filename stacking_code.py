@@ -5,6 +5,8 @@ from astropy.io import fits
 import spectres
 import LoadData as ld
 import matplotlib.pyplot as plt
+from astropy.stats import median_absolute_deviation
+import matplotlib.pyplot as plt
 
 """
 Outside of the function, define the pandas list of IDs that is needed to index the redshifts on line 49 (after for loop).
@@ -88,17 +90,18 @@ def stacks(objects_list): #input array of redshifts for given list of objects
 
     spec = np.transpose(spec)
     spec_err = np.transpose(spec_err)
-    standev_err = []
+    standev_err = np.zeros(len(new_wavs))
     med_new = np.nanmedian(med_norm)
     for m in range(len(new_wavs)):
         spec_ = spec[m,:]
         spec_errs = spec_err[m,:]
-        #standev_err[m] = np.std(spec_, axis=0)
+        standev_err[m] = median_absolute_deviation(spec_)*1.4826
         median_spec[m]=np.nanmedian(spec_)
 
     med_spec_units = median_spec*med_new #test removing normalisations to see fluxes nh
+    stack_error = standev_err/np.sqrt(len(spec))
 
-    return median_spec #returns an array of the new median stacked fluxes
+    return median_spec, stack_error #returns an array of the new median stacked fluxes
 
 
 

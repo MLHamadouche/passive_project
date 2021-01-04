@@ -683,7 +683,7 @@ all_IDs = np.concatenate((IDs_above, IDs_below), axis = None)
 new_wavs = np.arange(2400, 4200, 1.25)
 #med_stacks, colour_index, D4000_index, Mg_UV_index, H_delta_EW, ages = stacks(all_IDs)
 #shen_model = 0.56*x + (best_c)
-
+"""
 fig2, ax2 = plt.subplots(figsize=[12,8.5])
 im2 = ax2.scatter(strict_masses, np.log10(strict_sizes), s=200, c=age, cmap=plt.cm.magma, marker='o',linewidth=0.5, alpha = 0.8)
 cbar2 = fig2.colorbar(im2, ax=ax2)
@@ -703,7 +703,7 @@ plt.xlim(10.3, 11.4)
 plt.ylim(-0.4,1.1)
 #plt.savefig('RevM_cbar_ages_strictUVJ.pdf')
 plt.close()
-
+"""
 
 print('plots you need today massi')
 print('next')
@@ -741,8 +741,8 @@ def stack_lims(lower_lim, higher_lim):
 
     IDs_above_4 = IDs[index_masked_mass_4].str.decode("utf-8").str.rstrip().values
     IDs_below_4 = IDs[index_masked2_mass_4].str.decode("utf-8").str.rstrip().values
-    d4000lessIDs_above = []
-
+    #d4000lessIDs_above = []
+    """
     for i in ID_less_than_135:
         for j in IDs_above_4:
             #j = j.decode("utf-8")
@@ -759,6 +759,7 @@ def stack_lims(lower_lim, higher_lim):
 
     #d4000moreIDs = []
     """
+    """
     for k in ID_more_than_135:
         for l in IDs:
             l = l.decode("utf-8")
@@ -769,14 +770,10 @@ def stack_lims(lower_lim, higher_lim):
         if id in IDs:
             IDs = id"""
 
-    print('please work less above:', d4000lessIDs_above , '\n please work less below:', d4000lessIDs_below)
+    stacking_above_4 = stacks(IDs_above_4)
+    stacking_below_4 = stacks(IDs_below_4)
+    len_above, len_below = len(IDs_above_4), len(IDs_below_4)
 
-    stacking_above_4 = stacks(d4000lessIDs_above)
-    stacking_below_4 = stacks(d4000lessIDs_below)
-    len_above, len_below = len(d4000lessIDs_above), len(d4000lessIDs_below)
-    #len_above, len_below = len(IDs_above_4), len(IDs_below_4)
-    #stacking_above_4 = stacks(IDs_above_4)
-    #stacking_below_4 = stacks(IDs_below_4)
     stacking_both_4 = stacking_above_4, stacking_below_4
     len_IDs = len_above, len_below
 

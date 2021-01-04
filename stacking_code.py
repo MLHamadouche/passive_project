@@ -95,7 +95,7 @@ def stacks(objects_list): #input array of redshifts for given list of objects
     for m in range(len(new_wavs)):
         spec_ = spec[m,:]
         spec_errs = spec_err[m,:]
-        standev_err[m] = median_absolute_deviation(spec_)*1.4826
+        standev_err[m] = np.nanstd(spec_, axis=0)*1.25
         median_spec[m]=np.nanmedian(spec_)
 
     med_spec_units = median_spec*med_new #test removing normalisations to see fluxes nh

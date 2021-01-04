@@ -21,19 +21,23 @@ df1 = pd.DataFrame(both_xray)#, index = np.array(both_xray['FIELD'].str.decode("
 passive_cut = Table.read('FirstProjectCatalogs/x_match_final_passive_sample_edit.fits').to_pandas()
 df2 = pd.DataFrame(passive_cut)#, index = np.array(passive_cut['FIELD'].str.decode("utf-8").str.rstrip() + passive_cut['ID_1'].astype(str).str.pad(6, side='left', fillchar='0')+ passive_cut['CAT'].str.decode("utf-8")) )
 new_df=pd.concat([df1,df2]).drop_duplicates(subset = 'ID_1', keep=False)
+print('new_df', len(new_df))
 ID_list = new_df.set_index(new_df['FIELD'].str.decode("utf-8").str.rstrip() + new_df['ID_1'].astype(str).str.pad(6, side='left', fillchar='0') + new_df['CAT'].str.decode("utf-8"))
+print('ID_list', len(ID_list))
+
 #candels = Table.read('FirstProjectCatalogs/concat_candels_passive_match.fits').to_pandas()
 concat_3dhst = Table.read('FirstProjectCatalogs/concat_3dhst_passive_match.fits').to_pandas()
 df = pd.DataFrame(concat_3dhst)
+print('concat_3dhst', len(concat_3dhst))
 ID_list1 = np.array(concat_3dhst['FIELD'].str.decode("utf-8").str.rstrip() + concat_3dhst['ID_1'].astype(str).str.pad(6, side='left', fillchar='0') + concat_3dhst['CAT'].str.decode("utf-8"))
 ID_ = df.set_index(concat_3dhst['FIELD'].str.decode("utf-8").str.rstrip() + concat_3dhst['ID_1'].astype(str).str.pad(6, side='left', fillchar='0') + concat_3dhst['CAT'].str.decode("utf-8"))
 agn = np.array(both_xray['FIELD'].str.decode("utf-8").str.rstrip()+ both_xray['ID_1'].astype(str).str.pad(6, side='left', fillchar='0') + both_xray['CAT'].str.decode("utf-8"))
-
+print('agn:', len(agn))
 vandels_cat_pipes = Table.read("pipes/cats/vandels_cat_zspec.fits").to_pandas()
 df1 = pd.DataFrame(vandels_cat_pipes)
 ID_pipes = vandels_cat_pipes['#ID'].values
 IDs = df1.set_index(s.decode('utf-8') for s in vandels_cat_pipes['#ID'])
-
+print('pipes',len(ID_pipes))
 #df2 = pd.DataFrame(vandels_cat_pipes)
 #df2 = df2.groupby(df2['stellar_mass_50']>10.4).get_group(True)
 #ssfr2 = df2["ssfr_50"]
@@ -86,7 +90,7 @@ print('max=', max(re))
 
 Re_kpc = (np.array(re)*u.arcsec)/arcsec_per_kpc
 Re_kpc_errs = (np.array(re_errs)*u.arcsec)/arcsec_per_kpc
-
+print('Re:', len(Re_kpc))
 
 Rc = (np.sqrt(np.array(q_ratio))*Re_kpc) /u.kpc
 Rc_errs = (np.sqrt(np.array(q_ratio))*Re_kpc_errs) /u.kpc
@@ -98,7 +102,8 @@ col4 = fits.Column(name='log10(M*/Msun)', format='E', array=masses)
 col5 = fits.Column(name='Re_kpc', format='E', array=Re_kpc/u.kpc)
 col6 = fits.Column(name='Re_kpc_errs', format='E', array=Re_kpc_errs/u.kpc)
 col7 = fits.Column(name ='SSFR', format = 'E', array = ssfr2)
-hdu = fits.BinTableHDU.from_columns([col1, col2, col3, col4, col5, col6, col7])
+col8 = fits.Column(name = 'q', format = 'E', array = q_ratio)
+hdu = fits.BinTableHDU.from_columns([col1, col2, col3, col4, col5, col6, col7, col8])
 #hdu = fits.BinTableHDU.from_columns([col1, col2, col3, col4, col9, col5, col6 ])
 #file =  "Re_cat.fits"
 #hdu.writeto(file)
@@ -152,8 +157,12 @@ R_e = df2["Re_kpc"]
 R_e_errs = df2["Re_kpc_errs"]
 mass = df2["log10(M*/Msun)"]
 ssfr_50 = df2["SSFR"]
+ages = df2['age']
 #print(len(df2))
+qratio =df2['q']
 redshifts = df2['redshifts']
+
+
 alpha = 0.76
 log_A = 0.22
 x = np.linspace(9.5, 11.5, len(R_e))
@@ -196,30 +205,54 @@ y_model = 0.56*x + (best_c)
 #print(y_model[20])
 
 #print(y_model - shen)
+#shen2 = 0.56*x + (-5.54)
 #diff_shen_me = abs(y_model[0]) - abs(shen[0])
 #print(10**diff_shen_me)
+a, b = 0.51, 0.63
+wu_relation = a * (x - 11) + b
+shen = (0.56*x + (-5.54))
+ross_2013 = shen-np.log10(2.43)
+vdw_logA = [0.6, 0.42, 0.09, -0.05, -0.06]
+vdw_alpha = [0.75, 0.71, 0.76, 0.76, 0.79]
+vdw_z = [0.25, 0.75, 1.75, 2.25, 2.75]
+vdw_x = [x, x, x, x, x]
+vdw_dict = {'redshift': vdw_z, 'logA': vdw_logA, 'alpha': vdw_alpha, 'x': vdw_x}
+
+print(vdw_dict['redshift'])
 
 
+plt.rc('font', family='serif')
+plt.rc('xtick', labelsize='small')
+plt.rc('ytick', labelsize='small')
 
-fig1, ax1 = plt.subplots(figsize=[12,8.5])
-im1 = ax1.scatter(mass, np.log10(R_e), s=130, c=redshifts, cmap=plt.cm.magma, marker='o', edgecolors='black',linewidth=0.5 )
+fig1, ax1 = plt.subplots(figsize=[16,10.5])
+im1 = ax1.scatter(mass, np.log10(R_e), s=300, c=ages, cmap=plt.cm.magma, marker='o', linewidth=0.5, alpha = 0.9)
 cbar1 = fig1.colorbar(im1, ax=ax1)
 #cbar.set_label(r'$\mathrm{log_{10}(sSFR/yr)}$')
-cbar1.set_label(r'Redshift (z)', size=12)
-#ax1.plot(x, y_model, 'k', lw = 0.7, label= 'Shen et al. local ETG relation')
-ax1.plot(x, vdw_norm_model, 'k', lw = 1.2, label=f'v. der Wel z = 1.25 ETG relation normalised by f = {round((best_c_vdw-0.22),2)}')
-ax1.plot(x, log_Reff, 'r' ,lw = 1.2, label= 'v. der Wel z = 1.25 ETG relation (not normalised)')
-#ax1.scatter(masses, np.log10(Rc), marker='o', s=20, c='r', edgecolors='k')
-ax1.set_xlabel(r'$\mathrm{log_{10}{(M*/M_{\odot})}}$', size = 12)
-ax1.set_ylabel(r'$\mathrm{log_{10}{(R_{e}/kpc)}}$', size = 12)
-plt.xticks(fontsize=10)
-plt.yticks(fontsize=10)
-plt.legend(prop={'size': 10})
-plt.title('3D-HST log10(Re) versus log10(M*/Msun)', size = 13)
+cbar1.set_label('Age (Gyr)', size=18)
+ax1.plot(x, wu_relation, 'coral', lw = 1.5, label= 'Wu et al. 2018 $z \sim$ 0.7')
+ax1.plot(x, vdw_norm_model, 'k', lw = 2.5, label=f'van der Wel et al. 2014 $z$ = 1.25 ETG \n relation normalised by $f$ = {round((best_c_vdw-0.22),2)}')
+ax1.plot(x, log_Reff, 'grey' ,lw = 1.5,  label= 'van der Wel et al. 2014 ($z$ = 1.25)')
+ax1.plot(x, ross_2013, 'purple' ,lw = 2.2, label= 'McLure et al. 2013 ($z$ = 1.4)')
+ax1.plot(x, shen, 'teal',lw = 2.2, label= 'Shen et al. 2003' )
+
+for i in range(5):
+    ax1.plot(vdw_dict['x'][i], vdw_dict['logA'][i] + vdw_dict['alpha'][i]*(np.log10(10**(vdw_dict['x'][i])/(5*10**10))),ls = '--',lw = 0.8, label= 'van der Wel et al. 2014 ($z$ = '+str(vdw_dict['redshift'][i])+')')
+
+ax1.set_xlabel('$\mathrm{log_{10}{(M*/M_{\odot})}}$', size = 18)
+ax1.set_ylabel('$\mathrm{log_{10}{(R_{e}/kpc)}}$', size = 18)
+plt.xticks(fontsize=13)
+plt.yticks(fontsize=13)
+plt.legend(prop={'size': 12}, loc='lower right')
+plt.title('3D-HST log$_{10}$(Re) v log$_{10}$(M*/M$_{\odot}$)', size = 20)
 plt.xlim(10.3, 11.4)
+plt.ylim(-0.8, 1.5)
 #plt.show()
-#plt.savefig('Re_v_M*_test_with_Arjens_relationandbestfit_TEST.pdf')
+plt.savefig('size_mass_wu_all.pdf')
 plt.close()
+
+input()
+
 
 
 mg_uv_massi, colour_massi = np.loadtxt('MgUV_colour.dat', delimiter = ' ', unpack=True)
